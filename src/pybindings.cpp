@@ -18,4 +18,5 @@ PYBIND11_MODULE(ising, m) {
 
     // observables
     m.def("getPairwiseCorrs", &getPairwiseCorrs, "Calculate pairwise correlations");
+    m.def("getMeans", &getMeans, "Calculate means");
 }
