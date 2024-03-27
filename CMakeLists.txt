@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.27)
+project(Ising)
+
+set(CMAKE_CXX_STANDARD 20)
+
+include_directories(include/)
+include_directories(/opt/homebrew/include/eigen3)
+
+set(Python_EXECUTABLE "/Users/mariusmahiout/miniforge3/envs/ising_env/bin/python")
+find_package(Python 3.12 REQUIRED COMPONENTS Interpreter Development)
+
+add_subdirectory(extern/pybind11)
+
+pybind11_add_module(ising MODULE
+        src/pybindings.cpp
+        src/models.cpp
+        src/observables.cpp
+        src/fitter.cpp
+        src/utils.cpp
+)
