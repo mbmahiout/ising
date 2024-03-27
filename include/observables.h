@@ -6,4 +6,8 @@ Eigen::VectorXd getMeans(const Eigen::MatrixXi& states);
 
 Eigen::MatrixXd getPairwiseCorrs(const Eigen::MatrixXi& states);
 
+Eigen::MatrixXd getConnectedCorrs(const Eigen::MatrixXi& states);
+
+Eigen::MatrixXd getDelayedCorrs(const Eigen::MatrixXi& states, int dt);
+
 #endif //ISING_OBSERVABLES_H

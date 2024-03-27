@@ -31,8 +31,6 @@ def scatter_compare_2d_obs(gt: np.ndarray, est: np.ndarray):
 
 
 def scatter_compare_1d_obs(gt: np.ndarray, est: np.ndarray):
-    num_units = gt.shape[0]
-
     max_val = max(max(gt), max(est))
     min_val = min(min(gt), min(est))
     interval = np.linspace(min_val*2, max_val*2, 100)
@@ -73,8 +71,28 @@ def get_means(sample):
     return np.mean(sample, axis=1)
 
 
+def get_connected_corrs(sample):
+    m = get_means(sample)
+    chi = get_pairwise_corrs(sample)
+    return chi - np.outer(m, m)
+
+
+def get_delayed_corrs(sample, dt=1):
+    states = sample.T
+    states_head = states[:-dt]  # s(t); t = 1, ... , M-1
+    states_tail = states[dt:]  # s(t+1); t = 1, ... , M-1
+    num_bins = states_head.shape[0]
+    m_head = np.mean(states_head, axis=0)  # m(t)
+    m_tail = np.mean(states_tail, axis=0)  # m(t+1)
+    D = np.matmul(states_tail.T, states_head) / num_bins  # <s(t+1)s(t)>
+    D -= np.outer(m_tail, m_head)  # D = <[s(t+1) - m(t+1)][s(t) - m(t)cd ]>
+    return D
+
+
+##########################################################################################
+
 # setting up model
-num_units = 100
+num_units = 10
 beta = 1.3
 h = np.random.uniform(-.3 * beta, .3 * beta, num_units)
 J = np.zeros((num_units, num_units))
@@ -104,6 +122,9 @@ print("Simulation took {:.2f} seconds.".format(dt))
 t0 = time.time()
 
 m_est_py = get_means(sim)
+chi_est_py = get_pairwise_corrs(sim)
+C_est_py = get_connected_corrs(sim)
+D_est_py = get_delayed_corrs(sim)
 
 t1 = time.time()
 dt = t1 - t0
@@ -112,32 +133,17 @@ print("Computing observables (Python) took {:.2f} seconds.".format(dt))
 t0 = time.time()
 
 m_est_cpp = ising.getMeans(sim)
+chi_est_cpp = ising.getPairwiseCorrs(sim)
+C_est_cpp = ising.getConnectedCorrs(sim)
+D_est_cpp = ising.getDelayedCorrs(sim, 1)
 
 t1 = time.time()
 dt = t1 - t0
 print("Computing observables (C++) took {:.2f} seconds.".format(dt))
 
-# chi_gt = get_analytic_corrs(h, J)
+##########################################################################################
 
-# t0 = time.time()
-
-# chi_est_py = get_pairwise_corrs(sim)
-
-# t1 = time.time()
-# dt = t1 - t0
-# print("Computing observables (Python) took {:.2f} seconds.".format(dt))
-
-# t0 = time.time()
-
-# chi_est_cpp = ising.getPairwiseCorrs(sim)
-
-# t1 = time.time()
-# dt = t1 - t0
-# print("Computing observables (C++) took {:.2f} seconds.".format(dt))
-
-
-
-# plotting
-print(m_est_cpp.shape, m_est_py.shape)
-scatter_compare_1d_obs(m_est_cpp, m_est_py)
-
+scatter_compare_1d_obs(m_est_py, m_est_cpp)
+scatter_compare_2d_obs(chi_est_py, chi_est_cpp)
+scatter_compare_2d_obs(C_est_py, C_est_cpp)
+scatter_compare_2d_obs(D_est_py, D_est_cpp)

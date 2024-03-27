@@ -17,6 +17,8 @@ PYBIND11_MODULE(ising, m) {
             .def("simulate", &NeqModel::simulate);
 
     // observables
-    m.def("getPairwiseCorrs", &getPairwiseCorrs, "Calculate pairwise correlations");
     m.def("getMeans", &getMeans, "Calculate means");
+    m.def("getPairwiseCorrs", &getPairwiseCorrs, "Calculate pairwise correlations");
+    m.def("getConnectedCorrs", &getConnectedCorrs, "Calculate connected correlations");
+    m.def("getDelayedCorrs", &getDelayedCorrs, "Calculate delayed correlations");
 }
