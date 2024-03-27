@@ -15,6 +15,6 @@ pybind11_add_module(ising MODULE
         src/pybindings.cpp
         src/models.cpp
         src/observables.cpp
-        src/fitter.cpp
+        src/inverse.cpp
         src/utils.cpp
 )
