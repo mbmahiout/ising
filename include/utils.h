@@ -1,5 +1,5 @@
-#ifndef ISING_UTILS_H
-#define ISING_UTILS_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include "random_mt.h"
 #include <Eigen/Dense>
@@ -22,4 +22,4 @@ namespace Parameters {
     Eigen::VectorXd getUniformFields(int numUnits, double leftEdge, double rightEdge);
 }
 
-#endif //ISING_UTILS_H
+#endif //UTILS_H

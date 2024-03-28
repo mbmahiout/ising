@@ -5,10 +5,11 @@ Eigen::VectorXd getMeans(const Eigen::MatrixXi& states) {
     return (states.cast<double>()).rowwise().mean();
 }
 
+
 Eigen::MatrixXd getPairwiseCorrs(const Eigen::MatrixXi& states) { 
     int numBins {static_cast<int>(states.cols())};
 
-    return (states * states.transpose()).cast<double>() / numBins;
+    return (states * states.transpose()).cast<double>() / (numBins - 1);
 }
 
 
@@ -19,12 +20,13 @@ Eigen::MatrixXd getConnectedCorrs(const Eigen::MatrixXi& states) {
     return C - m * m.transpose();
 }
 
+
 Eigen::MatrixXd getDelayedCorrs(const Eigen::MatrixXi& states, int dt) {
     int numBins {static_cast<int>(states.cols())};
     int numBinsNew {numBins - dt};
     
-    Eigen::MatrixXi states_head {states.rightCols(numBinsNew)};
-    Eigen::MatrixXi states_tail {states.leftCols(numBinsNew)};
+    Eigen::MatrixXi states_head {states.leftCols(numBinsNew)};
+    Eigen::MatrixXi states_tail {states.rightCols(numBinsNew)};
     
     Eigen::VectorXd m_head {getMeans(states_head)};
     Eigen::VectorXd m_tail {getMeans(states_tail)};

@@ -92,7 +92,7 @@ def get_delayed_corrs(sample, dt=1):
 ##########################################################################################
 
 # setting up model
-num_units = 10
+num_units = 50
 beta = 1.3
 h = np.random.uniform(-.3 * beta, .3 * beta, num_units)
 J = np.zeros((num_units, num_units))
@@ -109,7 +109,7 @@ eq_model = ising.EqModel(num_units, J, h)
 # simulating
 t0 = time.time()
 
-sim = eq_model.simulate(150000, 10000)
+sim = eq_model.simulate(100000, 10000)
 
 t1 = time.time()
 dt = t1 - t0
@@ -121,9 +121,9 @@ print("Simulation took {:.2f} seconds.".format(dt))
 
 t0 = time.time()
 
-m_est_py = get_means(sim)
-chi_est_py = get_pairwise_corrs(sim)
-C_est_py = get_connected_corrs(sim)
+# m_est_py = get_means(sim)
+# chi_est_py = get_pairwise_corrs(sim)
+# C_est_py = get_connected_corrs(sim)
 D_est_py = get_delayed_corrs(sim)
 
 t1 = time.time()
@@ -132,9 +132,9 @@ print("Computing observables (Python) took {:.2f} seconds.".format(dt))
 
 t0 = time.time()
 
-m_est_cpp = ising.getMeans(sim)
-chi_est_cpp = ising.getPairwiseCorrs(sim)
-C_est_cpp = ising.getConnectedCorrs(sim)
+# m_est_cpp = ising.getMeans(sim)
+# chi_est_cpp = ising.getPairwiseCorrs(sim)
+# C_est_cpp = ising.getConnectedCorrs(sim)
 D_est_cpp = ising.getDelayedCorrs(sim, 1)
 
 t1 = time.time()
@@ -143,7 +143,8 @@ print("Computing observables (C++) took {:.2f} seconds.".format(dt))
 
 ##########################################################################################
 
-scatter_compare_1d_obs(m_est_py, m_est_cpp)
-scatter_compare_2d_obs(chi_est_py, chi_est_cpp)
-scatter_compare_2d_obs(C_est_py, C_est_cpp)
+# scatter_compare_1d_obs(m_est_py, m_est_cpp)
+# scatter_compare_2d_obs(chi_est_py, chi_est_cpp)
+# scatter_compare_2d_obs(C_est_py, C_est_cpp)
+
 scatter_compare_2d_obs(D_est_py, D_est_cpp)

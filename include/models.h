@@ -1,5 +1,5 @@
-#ifndef ISING_MODELS_H
-#define ISING_MODELS_H
+#ifndef MODELS_H
+#define MODELS_H
 
 #include "random_mt.h"
 #include <cmath>
@@ -62,4 +62,4 @@ public:
 };
 
 
-#endif //ISING_MODELS_H
+#endif //MODELS_H

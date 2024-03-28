@@ -1,5 +1,5 @@
-#ifndef ISING_RANDOM_MT_H
-#define ISING_RANDOM_MT_H
+#ifndef RANDOM_MT_H
+#define RANDOM_MT_H
 
 #include <chrono>
 #include <random>
@@ -67,4 +67,4 @@ namespace Random
     }
 }
 
-#endif //ISING_RANDOM_MT_H
+#endif //RANDOM_MT_H
