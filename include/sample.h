@@ -36,8 +36,11 @@ public:
     , m_isDcorrsSet {false}
     {}
 
+    
     // getters
-    Eigen::VectorXd getMeans() const {
+    [[nodiscard]] Eigen::MatrixXi getStates() const {return m_states;}
+
+    [[nodiscard]] Eigen::VectorXd getMeans() const {
         if (!m_isMeansSet) {
             setMeans();
         }
@@ -45,21 +48,21 @@ public:
         return m_means;
     }
 
-    Eigen::MatrixXd getPairwiseCorrs() const {
+    [[nodiscard]] Eigen::MatrixXd getPairwiseCorrs() const {
         if (!m_isPcorrsSet) {
             setPairwiseCorrs();
         }
         return m_pcorrs;
     }
 
-    Eigen::MatrixXd getConnectedCorrs() const {
+    [[nodiscard]] Eigen::MatrixXd getConnectedCorrs() const {
         if (!m_isCcorrsSet) {
             setConnectedCorrs();
         }
         return m_ccorrs;
     }
 
-    Eigen::MatrixXd getDelayedCorrs(int dt) const {
+    [[nodiscard]] Eigen::MatrixXd getDelayedCorrs(int dt) const {
         if (!m_isDcorrsSet) {
             setDelayedCorrs(dt);
         }

@@ -32,24 +32,24 @@ def get_pairwise_corrs(sample):
 
 
 # setting up model
-num_units = 200
+num_units = 100
 
 beta = 1.3
 h = np.random.uniform(-.3 * beta, .3 * beta, num_units)
-# J = np.random.normal(0,  beta / np.sqrt(num_units), (num_units, num_units))
-# for i in range(num_units):
-#     J[i,i] = 0
-#     for j in range(i+1, num_units):
-#         J[j, i] = J[i, j]
+J = np.random.normal(0,  beta / np.sqrt(num_units), (num_units, num_units))
+for i in range(num_units):
+    J[i,i] = 0
+    for j in range(i+1, num_units):
+        J[j, i] = J[i, j]
 
-J = np.zeros((num_units, num_units))
-if num_units % 2 == 0:
-    pairs = np.split(np.random.permutation(num_units), num_units / 2)
-else:
-    pairs = np.split(np.random.permutation(num_units - 1), (num_units - 1) / 2)
-for pair in pairs:
-    J[pair[0]][pair[1]] = np.random.normal(0,  beta / np.sqrt(num_units))
-    J[pair[1]][pair[0]] = J[pair[0]][pair[1]]
+# J = np.zeros((num_units, num_units))
+# if num_units % 2 == 0:
+#     pairs = np.split(np.random.permutation(num_units), num_units / 2)
+# else:
+#     pairs = np.split(np.random.permutation(num_units - 1), (num_units - 1) / 2)
+# for pair in pairs:
+#     J[pair[0]][pair[1]] = np.random.normal(0,  beta / np.sqrt(num_units))
+#     J[pair[1]][pair[0]] = J[pair[0]][pair[1]]
 
 eq_model = ising.EqModel(num_units, J, h)
 
@@ -62,19 +62,12 @@ t1 = time.time()
 dt = t1 - t0
 print("Simulation took {:.2f} seconds.".format(dt))
 
-
-# computing observables
-t0 = time.time()
+print(sim.getStates())
 
 chi_gt = get_analytic_corrs(h, J)
-chi_est = get_pairwise_corrs(sim)
+chi_est = sim.getPairwiseCorrs()
 
-t1 = time.time()
-dt = t1 - t0
-print("Computing observables took {:.2f} seconds.".format(dt))
-
-
-# plotting
+# # plotting
 def scatter_compare_2d_obs(gt: np.ndarray, est: np.ndarray):
     num_units = gt.shape[0]
     gt2plt = []
@@ -97,10 +90,4 @@ def scatter_compare_2d_obs(gt: np.ndarray, est: np.ndarray):
     plt.close()
 
 
-t0 = time.time()
-
 scatter_compare_2d_obs(chi_gt, chi_est)
-
-t1 = time.time()
-dt = t1 - t0
-print("Plotting took {:.2f} seconds.".format(dt))

@@ -1,12 +1,20 @@
+#include "sample.h"
 #include "models.h"
-#include "observables.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
-
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(ising, m) {
+    // sample
+    py::class_<Sample>(m, "Sample")
+        .def(py::init<Eigen::MatrixXi>())
+        .def("getStates", &Sample::getStates)
+        .def("getMeans", &Sample::getMeans)
+        .def("getPairwiseCorrs", &Sample::getPairwiseCorrs)
+        .def("getConnectedCorrs", &Sample::getConnectedCorrs)
+        .def("getDelayedCorrs", &Sample::getDelayedCorrs);
+
     // models
     py::class_<EqModel, std::shared_ptr<EqModel>>(m, "EqModel")
             .def(py::init<const int, Eigen::MatrixXd, Eigen::VectorXd>())
@@ -16,9 +24,4 @@ PYBIND11_MODULE(ising, m) {
             .def(py::init<const int, Eigen::MatrixXd, Eigen::VectorXd>())
             .def("simulate", &NeqModel::simulate);
 
-    // observables
-    m.def("getMeans", &getMeans, "Calculate means");
-    m.def("getPairwiseCorrs", &getPairwiseCorrs, "Calculate pairwise correlations");
-    m.def("getConnectedCorrs", &getConnectedCorrs, "Calculate connected correlations");
-    m.def("getDelayedCorrs", &getDelayedCorrs, "Calculate delayed correlations");
 }

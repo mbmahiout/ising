@@ -14,7 +14,7 @@ add_subdirectory(extern/pybind11)
 pybind11_add_module(ising MODULE
         src/pybindings.cpp
         src/models.cpp
-        src/observables.cpp
-        src/inverse.cpp
+        src/sample.cpp
+        #src/inverse.cpp
         src/utils.cpp
 )
