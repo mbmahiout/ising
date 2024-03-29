@@ -4,19 +4,7 @@
 #include "models.h"
 #include <Eigen/Dense>
 
-template <typename T>
-class IsingFitter {
-protected:
-    T m_model {};
-    Eigen::MatrixXd m_J_history {};
-    Eigen::MatrixXd m_h_history {};
-    Eigen::MatrixXd LLHs {};
 
-public:
-    IsingFitter(T model)
-    : m_model {model}
-
-};
 
 #endif //INVERSE_H
 
