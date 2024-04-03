@@ -5,8 +5,8 @@
 #include "utils.h"
 #include "models.h"
 
-Eigen::MatrixXd IsingModel::getEffectiveFields() const {
-    return m_h + m_J * m_state.cast<double>();
+Eigen::VectorXd IsingModel::getEffectiveFields(Eigen::VectorXi state) const {
+    return m_h + m_J * state.cast<double>();
 }
 
  Sample IsingModel::simulate(int numSims, int numBurn) {
@@ -47,7 +47,7 @@ void EqModel::updateState() {
 }
 
 Eigen::VectorXd NeqModel::getProbActive() const {
-    Eigen::MatrixXd effFields {getEffectiveFields()};
+    Eigen::MatrixXd effFields {getEffectiveFields(m_state)};
     return (1 + (- 2 * effFields.array()).exp()).inverse();
 }
 
@@ -58,3 +58,4 @@ void NeqModel::updateState() {
     Eigen::VectorXi newState { 2 * activeBools.array() - 1 };
     setState(newState); // should we move?
 }
+

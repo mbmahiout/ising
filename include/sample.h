@@ -38,7 +38,9 @@ public:
 
     
     // getters
+    [[nodiscard]] int getNumBins() const {return m_numBins;}
     [[nodiscard]] Eigen::MatrixXi getStates() const {return m_states;}
+    [[nodiscard]] Eigen::VectorXi getState(int t) const {return m_states.col(t);}
 
     [[nodiscard]] Eigen::VectorXd getMeans() const {
         if (!m_isMeansSet) {

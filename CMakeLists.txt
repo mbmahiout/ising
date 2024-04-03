@@ -3,6 +3,8 @@ project(Ising)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(BUILD_TESTS "Build C++ testing/debugging binaries" OFF)
+
 include_directories(include/)
 include_directories(/opt/homebrew/include/eigen3)
 
@@ -15,6 +17,16 @@ pybind11_add_module(ising MODULE
         src/pybindings.cpp
         src/models.cpp
         src/sample.cpp
-        #src/inverse.cpp
+        src/inverse.cpp
         src/utils.cpp
 )
+
+if(BUILD_TESTS)
+    add_executable(ising_debug
+        testing/ising_debug.cpp
+        src/models.cpp
+        src/sample.cpp
+        src/inverse.cpp
+        src/utils.cpp
+    )
+endif()

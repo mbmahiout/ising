@@ -13,10 +13,10 @@ Eigen::MatrixXd getPairwiseCorrs(const Eigen::MatrixXi& states) {
 }
 
 
-Eigen::MatrixXd getConnectedCorrs(const Eigen::MatrixXi& states) { 
+Eigen::MatrixXd getConnectedCorrs(const Eigen::MatrixXi& states) {
     Eigen::VectorXd m {getMeans(states)};
     Eigen::MatrixXd C {getPairwiseCorrs(states)};
-    
+
     return C - m * m.transpose();
 }
 
