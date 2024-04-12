@@ -1,5 +1,5 @@
-#ifndef INVERSE_H
-#define INVERSE_H
+#ifndef EXACT_INFER_H
+#define EXACT_INFER_H
 
 #include "models.h"
 #include "sample.h"
@@ -30,10 +30,10 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
 
 }
 
-namespace NeqInverse {
+// namespace NeqInverse {
 
-std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample);
+// std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample);
 
-}
+// }
 
-#endif //INVERSE_H
+#endif //EXACT_INFER_H

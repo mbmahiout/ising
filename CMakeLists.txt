@@ -17,7 +17,7 @@ pybind11_add_module(ising MODULE
         src/pybindings.cpp
         src/models.cpp
         src/sample.cpp
-        src/inverse.cpp
+        src/exact_infer.cpp
         src/utils.cpp
 )
 
@@ -26,7 +26,7 @@ if(BUILD_TESTS)
         testing/ising_debug.cpp
         src/models.cpp
         src/sample.cpp
-        src/inverse.cpp
+        src/exact_infer.cpp
         src/utils.cpp
     )
 endif()

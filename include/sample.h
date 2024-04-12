@@ -38,6 +38,7 @@ public:
 
     
     // getters
+    [[nodiscard]] int getNumUnits() const {return m_numUnits;}
     [[nodiscard]] int getNumBins() const {return m_numBins;}
     [[nodiscard]] Eigen::MatrixXi getStates() const {return m_states;}
     [[nodiscard]] Eigen::VectorXi getState(int t) const {return m_states.col(t);}

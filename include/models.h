@@ -39,7 +39,8 @@ public:
     [[nodiscard]] Eigen::VectorXd getFields() const {return m_h;}
     [[nodiscard]] Eigen::MatrixXd getCouplings() const {return m_J;}
     [[nodiscard]] Eigen::VectorXi getState() const {return m_state;}
-    [[nodiscard]] Eigen::VectorXd getEffectiveFields(Eigen::VectorXi state) const;
+    [[nodiscard]] Eigen::VectorXd getEffectiveFields(Eigen::VectorXd stateDouble) const;
+    [[nodiscard]] Eigen::MatrixXd getEffectiveFields(Eigen::MatrixXd statesDouble) const;
 
     // MCMC simulation
     Sample simulate(int numSims, int numBurn=1000);
@@ -55,15 +56,15 @@ public:
     void updateState() override;
 };
 
-class NeqModel: public IsingModel {
-public:
-    NeqModel(const int numUnits, const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
-            : IsingModel(numUnits, J, h)
-    {}
+// class NeqModel: public IsingModel {
+// public:
+//     NeqModel(const int numUnits, const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
+//             : IsingModel(numUnits, J, h)
+//     {}
 
-    [[nodiscard]] Eigen::VectorXd getProbActive() const;
-    void updateState() override;
-};
+//     [[nodiscard]] Eigen::VectorXd getProbActive() const;
+//     void updateState() override;
+// };
 
 
 #endif //MODELS_H

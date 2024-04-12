@@ -5,8 +5,14 @@
 #include "utils.h"
 #include "models.h"
 
-Eigen::VectorXd IsingModel::getEffectiveFields(Eigen::VectorXi state) const {
-    return m_h + m_J * state.cast<double>();
+Eigen::VectorXd IsingModel::getEffectiveFields(Eigen::VectorXd stateDouble) const {
+    return m_h + m_J * stateDouble;
+}
+
+Eigen::MatrixXd IsingModel::getEffectiveFields(Eigen::MatrixXd statesDouble) const {
+    Eigen::MatrixXd effFields {m_J * statesDouble};
+    effFields.colwise() += m_h;
+    return effFields;
 }
 
  Sample IsingModel::simulate(int numSims, int numBurn) {
@@ -46,16 +52,16 @@ void EqModel::updateState() {
         m_state(idx) *= -1;
 }
 
-Eigen::VectorXd NeqModel::getProbActive() const {
-    Eigen::MatrixXd effFields {getEffectiveFields(m_state)};
-    return (1 + (- 2 * effFields.array()).exp()).inverse();
-}
+// Eigen::VectorXd NeqModel::getProbActive() const {
+//     Eigen::VectorXd effFields {getEffectiveFields(m_state.cast<double>())};
+//     return (1 + (- 2 * effFields.array()).exp()).inverse();
+// }
 
-void NeqModel::updateState() {
-    Eigen::VectorXd probActive {getProbActive()};
-    Eigen::VectorXd u {Misc::getUniformVector(m_numUnits, 0, 1)};
-    Eigen::VectorXi activeBools {(u.array() < probActive.array()).cast<int>()};
-    Eigen::VectorXi newState { 2 * activeBools.array() - 1 };
-    setState(newState); // should we move?
-}
+// void NeqModel::updateState() {
+//     Eigen::VectorXd probActive {getProbActive()};
+//     Eigen::VectorXd u {Misc::getUniformVector(m_numUnits, 0, 1)};
+//     Eigen::VectorXi activeBools {(u.array() < probActive.array()).cast<int>()};
+//     Eigen::VectorXi newState { 2 * activeBools.array() - 1 };
+//     setState(newState); // should we move?
+// }
 

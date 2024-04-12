@@ -1,4 +1,4 @@
-#include "inverse.h"
+#include "exact_infer.h"
 #include "sample.h"
 #include "models.h"
 #include <Eigen/Dense>
@@ -26,9 +26,9 @@ void setMaxLikelihoodParams( // can sample be const when we use lazy initializat
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample, numSims, numBurn);
             else
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample);
-        } else {
-            std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
-        }
+        // } else {
+        //     std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
+        // }
         
         model.setFields(model.getFields() + learningRate * dh);
         model.setCouplings(model.getCouplings() + learningRate * dJ);
@@ -37,9 +37,11 @@ void setMaxLikelihoodParams( // can sample be const when we use lazy initializat
 
 }
 
+}
+
 // Explicit template instantiations
 template void Inverse::setMaxLikelihoodParams<EqModel>(EqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn);
-template void Inverse::setMaxLikelihoodParams<NeqModel>(NeqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn);
+//template void Inverse::setMaxLikelihoodParams<NeqModel>(NeqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn);
 
 
 namespace EqInverse {
@@ -63,52 +65,53 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
 }
 
 
+
 std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample& sample) {
+
+    Eigen::MatrixXd states {sample.getStates().cast<double>()};
+    Eigen::MatrixXd states_transposed {states.transpose()};
+   
+    Eigen::MatrixXd effFields {model.getEffectiveFields(states)};
+    Eigen::MatrixXd tanh_effFields {effFields.array().tanh().matrix()};
+
+    Eigen::MatrixXd dh_terms {states - tanh_effFields};  
+    int numBins {sample.getNumBins()}; 
+    Eigen::VectorXd dh {dh_terms.rowwise().sum() / numBins};
+
     int numUnits {model.getNumUnits()};
-    int numBins {sample.getNumBins()};
-
-    Eigen::VectorXd dh(numUnits);
-    Eigen::MatrixXd dJ(numUnits, numUnits);
-
-    for (int t {0}; t < numBins; ++t) {
-        Eigen::VectorXi state_t {sample.getState(t)};
-        Eigen::VectorXd effFields {model.getEffectiveFields(state_t)};
-        Eigen::VectorXd dh_term {state_t.cast<double>() - effFields.array().tanh().matrix()};
-
-        dh += dh_term;
-        dJ += dh_term * state_t.cast<double>();
-    }
-    dh /= numBins;
-    dJ /= numBins;
-
-    return {dh, dJ};
-}
-
-}
-
-namespace NeqInverse {
-
-std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample) {
-    int numUnits {model.getNumUnits()};
-    int numBins {sample.getNumBins()};
-
-    Eigen::VectorXd dh {Eigen::VectorXd::Zero(numUnits)};
     Eigen::MatrixXd dJ {Eigen::MatrixXd::Zero(numUnits, numUnits)};
-
-    for (int t {0}; t < numBins - 1; ++t) {
-        Eigen::VectorXi state_t {sample.getState(t)};
-        Eigen::VectorXi state_tp1 {sample.getState(t+1)};
-
-        Eigen::VectorXd effFields {model.getEffectiveFields(state_t)};
-        Eigen::VectorXd dh_term {state_tp1.cast<double>() - effFields.array().tanh().matrix()};
-
-        dh += dh_term;
-        dJ += dh_term * (state_t.cast<double>()).transpose();
+    for (int t {0}; t < numBins; ++t) {
+        dJ += dh_terms.col(t) * states.col(t).transpose();
     }
-    dh /= numBins;
     dJ /= numBins;
-
     return {dh, dJ};
 }
 
 }
+
+// namespace NeqInverse {
+
+// std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample) {
+//     int numUnits {model.getNumUnits()};
+//     int numBins {sample.getNumBins()};
+
+//     Eigen::VectorXd dh {Eigen::VectorXd::Zero(numUnits)};
+//     Eigen::MatrixXd dJ {Eigen::MatrixXd::Zero(numUnits, numUnits)};
+
+//     for (int t {0}; t < numBins - 1; ++t) {
+//         Eigen::VectorXi state_t {sample.getState(t)};
+//         Eigen::VectorXi state_tp1 {sample.getState(t+1)};
+
+//         Eigen::VectorXd effFields {model.getEffectiveFields(state_t)};
+//         Eigen::VectorXd dh_term {state_tp1.cast<double>() - effFields.array().tanh().matrix()};
+
+//         dh += dh_term;
+//         dJ += dh_term * (state_t.cast<double>()).transpose();
+//     }
+//     dh /= numBins;
+//     dJ /= numBins;
+
+//     return {dh, dJ};
+// }
+
+// }
