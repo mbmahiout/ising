@@ -30,8 +30,8 @@ PYBIND11_MODULE(ising, m) {
             .def(py::init<const int, Eigen::MatrixXd, Eigen::VectorXd>())
             
             // setters
-            .def("setFields", &EqModel::setState)
-            .def("setCouplings", &EqModel::setState)
+            .def("setFields", &EqModel::setFields)
+            .def("setCouplings", &EqModel::setCouplings)
 
             // getters
             .def("getNumUnits", &EqModel::getNumUnits)
