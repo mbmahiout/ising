@@ -2,6 +2,7 @@
 #include "models.h"
 #include "exact_infer.h"
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h> 
 #include <pybind11/eigen.h>
 
 namespace py = pybind11;
@@ -27,7 +28,7 @@ PYBIND11_MODULE(ising, m) {
     // models
     py::class_<EqModel, std::shared_ptr<EqModel>>(m, "EqModel")
             // constructor
-            .def(py::init<const int, Eigen::MatrixXd, Eigen::VectorXd>())
+            .def(py::init<Eigen::MatrixXd, Eigen::VectorXd>())
             
             // setters
             .def("setFields", &EqModel::setFields)
@@ -41,23 +42,22 @@ PYBIND11_MODULE(ising, m) {
             // simulation
             .def("simulate", &EqModel::simulate);
 
-
-//     py::class_<NeqModel, std::shared_ptr<NeqModel>>(m, "NeqModel")
-//             .def(py::init<const int, Eigen::MatrixXd, Eigen::VectorXd>())
-//             .def("getFields", &NeqModel::getFields)
-//             .def("getCouplings", &NeqModel::getCouplings)
-//             .def("simulate", &NeqModel::simulate);
-
     // inverse
-    m.def("setMaxLikelihoodParamsEq", 
-          &Inverse::setMaxLikelihoodParams<EqModel>,
-          "Set maximum likelihood parameters for EqModel",
-          py::arg("model"), py::arg("sample"), py::arg("maxSteps"), 
-          py::arg("learningRate"), py::arg("numSims"), py::arg("numBurn"));
+    py::class_<Inverse::maxLikelihoodTraj>(m, "maxLikelihoodTraj")
+        .def(py::init<>())
+        .def_readwrite("fieldsHistory", &Inverse::maxLikelihoodTraj::fieldsHistory)
+        .def_readwrite("couplingsHistory", &Inverse::maxLikelihoodTraj::couplingsHistory)
+        .def_readwrite("LLHs", &Inverse::maxLikelihoodTraj::LLHs);
 
-//     m.def("setMaxLikelihoodParamsNeq", 
-//           &Inverse::setMaxLikelihoodParams<NeqModel>,
-//           "Set maximum likelihood parameters for NeqModel",
-//           py::arg("model"), py::arg("sample"), py::arg("maxSteps"), 
-//           py::arg("learningRate"), py::arg("numSims"), py::arg("numBurn"));
+    m.def("maxLikelihoodEq", 
+          &Inverse::maxLikelihood<EqModel>,
+          "Perform maximum likelihood estimation",
+          py::arg("model"), 
+          py::arg("sample"), 
+          py::arg("maxSteps"), 
+          py::arg("learningRate"), 
+          py::arg("numSims") = 0, 
+          py::arg("numBurn") = 0, 
+          py::arg("calcLLH") = false);
+
 }

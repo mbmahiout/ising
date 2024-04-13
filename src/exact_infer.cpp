@@ -7,12 +7,27 @@
 #include <cmath>
 #include <type_traits>
 
+/*
+Next steps:
+    - include convergence criterion for maxLikelihood
+    - implement getLLH (maybe only compute, say, every 10 steps)
+    - profile and implement NEQ version
+*/
+
 namespace Inverse {
 
 template <typename T>
-void setMaxLikelihoodParams( // can sample be const when we use lazy initialization?
-    T& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn
+maxLikelihoodTraj maxLikelihood(
+    T& model, 
+    Sample& sample, 
+    int maxSteps, 
+    double learningRate, 
+    int numSims, 
+    int numBurn,
+    bool calcLLH
 ) {
+    maxLikelihoodTraj out {};
+
     int numUnits {model.getNumUnits()};
     bool converged {false};
     int step {0};
@@ -32,16 +47,24 @@ void setMaxLikelihoodParams( // can sample be const when we use lazy initializat
         
         model.setFields(model.getFields() + learningRate * dh);
         model.setCouplings(model.getCouplings() + learningRate * dJ);
+
+        out.fieldsHistory.push_back(model.getFields());
+        out.couplingsHistory.push_back(model.getCouplings());
+        // if (calcLLH) { // to-do (maybe calculate eg, every 10 steps only)
+        //     out.LLHs.push_back(getLLH(model, sample))
+        // }
     }
 }
 
+    return out;
 }
 
 }
 
 // Explicit template instantiations
-template void Inverse::setMaxLikelihoodParams<EqModel>(EqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn);
-//template void Inverse::setMaxLikelihoodParams<NeqModel>(NeqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn);
+template Inverse::maxLikelihoodTraj Inverse::maxLikelihood<EqModel>(
+    EqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn, bool calcLLH
+);
 
 
 namespace EqInverse {

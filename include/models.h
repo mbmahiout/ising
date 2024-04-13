@@ -12,19 +12,19 @@
 
 class IsingModel {
 protected:
-    const int m_numUnits {};
     Eigen::MatrixXd m_J {};
     Eigen::VectorXd m_h {};
+    const int m_numUnits {};
     Eigen::VectorXi m_state {};
 
     virtual void updateState() = 0;
 
 public:
-    IsingModel(const int numUnits, const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
-            : m_numUnits{numUnits} // doesn't have to be explicit; can be inferred from h
-            , m_J {J}
+    IsingModel(const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
+            : m_J {J}
             , m_h {h}
-            , m_state {Misc::getRandomState(numUnits)} // ^though maybe could cause issue here?
+            , m_numUnits {static_cast<int>(h.rows())}
+            , m_state {Misc::getRandomState(m_numUnits)}
             {}
 
     virtual ~IsingModel() = default;
@@ -48,23 +48,13 @@ public:
 
 class EqModel: public IsingModel {
 public:
-    EqModel(const int numUnits, const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
-    : IsingModel(numUnits, J, h)
+    EqModel(const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
+    : IsingModel(J, h)
     {}
 
     double getEnergyChange(int idx);
     void updateState() override;
 };
-
-// class NeqModel: public IsingModel {
-// public:
-//     NeqModel(const int numUnits, const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
-//             : IsingModel(numUnits, J, h)
-//     {}
-
-//     [[nodiscard]] Eigen::VectorXd getProbActive() const;
-//     void updateState() override;
-// };
 
 
 #endif //MODELS_H

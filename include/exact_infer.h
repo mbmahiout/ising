@@ -9,9 +9,21 @@
 
 namespace Inverse {
 
+struct maxLikelihoodTraj {
+    std::vector<Eigen::VectorXd> fieldsHistory;
+    std::vector<Eigen::MatrixXd> couplingsHistory;
+    std::vector<double> LLHs; 
+};
+
 template <typename T>
-void setMaxLikelihoodParams(
-    T& model, Sample& sample, int maxSteps, double learningRate, int numSims=0, int numBurn=0
+maxLikelihoodTraj maxLikelihood(
+    T& model, 
+    Sample& sample, 
+    int maxSteps, 
+    double learningRate, 
+    int numSims=0, 
+    int numBurn=0,
+    bool calcLLH=false
 );
 
 }
