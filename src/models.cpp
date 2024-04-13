@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include "utils.h"
 #include "models.h"
+#include <boost/dynamic_bitset.hpp>
 
 Eigen::VectorXd IsingModel::getEffectiveFields(Eigen::VectorXd stateDouble) const {
     return m_h + m_J * stateDouble;
@@ -51,6 +52,63 @@ void EqModel::updateState() {
     if (u < probFlip)
         m_state(idx) *= -1;
 }
+
+Eigen::MatrixXi EqModel::genFullStateSpace() const {
+    Eigen::Index numStates {1LL << m_numUnits}; // = 2^N; long long to avoid overflow
+    Eigen::MatrixXi states(m_numUnits, numStates);
+
+    for (Eigen::Index s {0}; s < numStates; ++s) {
+        boost::dynamic_bitset<> bits(m_numUnits, s); // dynamic bitset of size numUnits initialized to s
+        for (int i {0}; i < m_numUnits; ++i) {
+            states(i, s) = bits[i] ? 1 : -1;
+        }
+    }
+
+    return states;
+}
+
+double EqModel::getHamiltonian(const Eigen::VectorXi& state) const {
+    double H {-m_h.dot(state.cast<double>())};  // inner product?
+    
+    for (int i {0}; i < m_numUnits; ++i) {
+        for (int j {i + 1}; j < m_numUnits; ++j) {
+            H -= m_J(i, j) * state(i) * state(j);
+        }
+    }
+
+    return H;
+}
+
+double EqModel::getPartitionFunc() const {
+    double Z {0};
+    
+    Eigen::MatrixXi stateSpace {genFullStateSpace()};
+    for (int s {0}; s < stateSpace.cols(); ++s) {
+        Eigen::VectorXi state {stateSpace.col(s)}; 
+        double H {getHamiltonian(state)};
+        Z += std::exp(-H);
+    }
+
+    return Z;
+}
+
+double EqModel::getLLH(Sample& sample) const {
+    Eigen::VectorXd m {sample.getMeans()};
+    Eigen::MatrixXd chi {sample.getPairwiseCorrs()};
+    double Z {getPartitionFunc()};
+
+    double LLH {m.sum() - std::log(Z)};
+    for (int i {0}; i < m_numUnits; ++i) {
+        for (int j {i + 1}; j < m_numUnits; ++j) {
+            LLH += m_J(i, j) * chi(i, j);
+        }
+    }
+
+    return LLH;    
+}
+
+
+
 
 // Eigen::VectorXd NeqModel::getProbActive() const {
 //     Eigen::VectorXd effFields {getEffectiveFields(m_state.cast<double>())};

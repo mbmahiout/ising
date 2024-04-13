@@ -9,8 +9,8 @@
 
 /*
 Next steps:
-    - include convergence criterion for maxLikelihood
     - implement getLLH (maybe only compute, say, every 10 steps)
+    - include convergence criterion for maxLikelihood
     - profile and implement NEQ version
 */
 
@@ -36,6 +36,7 @@ maxLikelihoodTraj maxLikelihood(
         Eigen::VectorXd dh(numUnits);
         Eigen::MatrixXd dJ(numUnits, numUnits);
 
+        // could be if EqModel, else if NeqModel, else throw exception
         if constexpr (std::is_same_v<T, EqModel>) {
             if (numSims > 0) 
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample, numSims, numBurn);
@@ -50,9 +51,10 @@ maxLikelihoodTraj maxLikelihood(
 
         out.fieldsHistory.push_back(model.getFields());
         out.couplingsHistory.push_back(model.getCouplings());
-        // if (calcLLH) { // to-do (maybe calculate eg, every 10 steps only)
-        //     out.LLHs.push_back(getLLH(model, sample))
-        // }
+
+        if (calcLLH) {
+            out.LLHs.push_back(model.getLLH(sample));
+        }
     }
 }
 

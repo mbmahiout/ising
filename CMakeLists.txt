@@ -5,11 +5,16 @@ set(CMAKE_CXX_STANDARD 20)
 
 option(BUILD_TESTS "Build C++ testing/debugging binaries" OFF)
 
+
 include_directories(include/)
 include_directories(/opt/homebrew/include/eigen3)
 
 set(Python_EXECUTABLE "/Users/mariusmahiout/miniforge3/envs/ising_env/bin/python")
 find_package(Python 3.12 REQUIRED COMPONENTS Interpreter Development)
+find_package(Boost 1.65 REQUIRED) 
+
+include_directories(${Boost_INCLUDE_DIRS})
+
 
 add_subdirectory(extern/pybind11)
 

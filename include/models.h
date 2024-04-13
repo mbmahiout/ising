@@ -52,8 +52,13 @@ public:
     : IsingModel(J, h)
     {}
 
-    double getEnergyChange(int idx);
+    double getEnergyChange(int idx); 
     void updateState() override;
+    Eigen::MatrixXi genFullStateSpace() const;  // done
+    double getHamiltonian(const Eigen::VectorXi& state) const;  // done
+    double getPartitionFunc() const;  // done
+    double getLLH(Sample& sample) const;  // done
+
 };
 
 
