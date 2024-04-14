@@ -45,17 +45,29 @@ PYBIND11_MODULE(ising, m) {
     // inverse
     py::class_<Inverse::maxLikelihoodTraj>(m, "maxLikelihoodTraj")
         .def(py::init<>())
+        
+        // parameters trajectory
         .def_readwrite("fieldsHistory", &Inverse::maxLikelihoodTraj::fieldsHistory)
         .def_readwrite("couplingsHistory", &Inverse::maxLikelihoodTraj::couplingsHistory)
+        
+        // for convergence testing
+        .def_readwrite("fieldsDiffsEMA", &Inverse::maxLikelihoodTraj::fieldsDiffsEMA)
+        .def_readwrite("couplingsDiffsEMA", &Inverse::maxLikelihoodTraj::couplingsDiffsEMA)
+        .def_readwrite("fieldsGrads", &Inverse::maxLikelihoodTraj::fieldsGrads)
+        .def_readwrite("couplingsGrads", &Inverse::maxLikelihoodTraj::couplingsGrads)
+
+        // optionally (for testing)
         .def_readwrite("LLHs", &Inverse::maxLikelihoodTraj::LLHs);
 
     m.def("maxLikelihoodEq", 
           &Inverse::maxLikelihood<EqModel>,
-          "Perform maximum likelihood estimation",
+          "Gradient ascent for LLH maximization",
           py::arg("model"), 
           py::arg("sample"), 
           py::arg("maxSteps"), 
-          py::arg("learningRate"), 
+          py::arg("learningRate") = 0.1,
+          py::arg("alpha") = 0.1, 
+          py::arg("tolerance") = 1e-5, 
           py::arg("numSims") = 0, 
           py::arg("numBurn") = 0, 
           py::arg("calcLLH") = false);

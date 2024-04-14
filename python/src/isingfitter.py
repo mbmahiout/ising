@@ -11,8 +11,18 @@ import numpy as np
 class IsingFitter:
     def __init__(self, model):
         self.model = model
+
+        # parameters trajectory
         self.fields_history = []
         self.couplings_history = []
+
+        # for convergence testing
+        self.fields_diffs = []
+        self.couplings_diffs = []
+        self.fields_grads = []
+        self.couplings_grads = []
+
+        # optionally, for testing
         self.llhs = []
 
     def check_sample_dims(self, sample):
@@ -99,10 +109,37 @@ class EqFitter(IsingFitter):
         # if not isinstance(model, ising.EqModel):
         #     raise ValueError("Model must be an equilibrium Ising model (EqModel).")
 
-    def maximize_likelihood(self, sample, max_steps, learning_rate, num_sims=0, num_burn=0, calc_llh=False):
-        out = ising.maxLikelihoodEq(self.model, sample, max_steps, learning_rate, num_sims, num_burn, calc_llh)
+    def maximize_likelihood(
+            self,
+            sample,
+            max_steps,
+            learning_rate=0.1,
+            alpha=0.1,
+            tolerance=1e-5,
+            num_sims=0,
+            num_burn=0,
+            calc_llh=False
+    ):
+        out = ising.maxLikelihoodEq(
+            self.model,
+            sample,
+            max_steps,
+            learning_rate,
+            alpha,
+            tolerance,
+            num_sims,
+            num_burn,
+            calc_llh
+        )
+
         self.fields_history = out.fieldsHistory
         self.couplings_history = out.couplingsHistory
+
+        self.fields_diffs = out.fieldsDiffsEMA
+        self.couplings_diffs = out.couplingsDiffsEMA
+        self.fields_grads = out.fieldsGrads
+        self.couplings_grads = out.couplingsGrads
+
         if calc_llh:
             self.llhs = out.LLHs
         # Note: might use **kwargs like original implementation

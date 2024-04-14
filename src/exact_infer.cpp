@@ -9,30 +9,61 @@
 
 /*
 Next steps:
-    - implement getLLH (maybe only compute, say, every 10 steps)
-    - include convergence criterion for maxLikelihood
     - profile and implement NEQ version
 */
 
 namespace Inverse {
 
 template <typename T>
+void updateEMA(
+    T& model, 
+    Eigen::VectorXd& fieldsEMA, 
+    Eigen::MatrixXd& couplingsEMA, 
+    const double alpha
+) {
+    fieldsEMA = alpha * model.getFields() + (1 - alpha) * fieldsEMA;
+    couplingsEMA = alpha * model.getCouplings() + (1 - alpha) * couplingsEMA;    
+}   
+
+template <typename T>
+bool hasConverged(
+    T& model,
+    Eigen::VectorXd& fieldsEMA, 
+    Eigen::MatrixXd& couplingsEMA, 
+    const double tolerance
+) {
+    double fieldsDiff {(model.getFields() - fieldsEMA).norm()};
+    double couplingsDiff {(model.getCouplings() - couplingsEMA).norm()};
+
+    bool fieldsConverged {fieldsDiff < tolerance};
+    bool couplingsConverged {couplingsDiff < tolerance};
+
+    return (fieldsConverged && couplingsConverged);
+}
+
+
+template <typename T>
 maxLikelihoodTraj maxLikelihood(
     T& model, 
     Sample& sample, 
     int maxSteps, 
-    double learningRate, 
+    double learningRate,
+    double alpha,  // for EMA
+    double tolerance,  // for convergence checking
     int numSims, 
     int numBurn,
     bool calcLLH
 ) {
     maxLikelihoodTraj out {};
 
+    Eigen::VectorXd fieldsEMA {model.getFields()};
+    Eigen::MatrixXd couplingsEMA {model.getCouplings()};
+
     int numUnits {model.getNumUnits()};
     bool converged {false};
     int step {0};
     while (!converged && step <= maxSteps) {
-        step += 1;
+
         Eigen::VectorXd dh(numUnits);
         Eigen::MatrixXd dJ(numUnits, numUnits);
 
@@ -42,30 +73,51 @@ maxLikelihoodTraj maxLikelihood(
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample, numSims, numBurn);
             else
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample);
-        // } else {
+        }  // else {
         //     std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
         // }
         
         model.setFields(model.getFields() + learningRate * dh);
         model.setCouplings(model.getCouplings() + learningRate * dJ);
-
         out.fieldsHistory.push_back(model.getFields());
         out.couplingsHistory.push_back(model.getCouplings());
 
         if (calcLLH) {
             out.LLHs.push_back(model.getLLH(sample));
         }
-    }
-}
 
+        updateEMA(model, fieldsEMA, couplingsEMA, alpha);
+
+        if (step > 1) {
+            out.fieldsGrads.push_back(dh);
+            out.couplingsGrads.push_back(dJ);
+            out.fieldsDiffsEMA.push_back(model.getFields() - fieldsEMA);
+            out.couplingsDiffsEMA.push_back(model.getCouplings() - couplingsEMA);
+
+            converged = hasConverged(model, fieldsEMA, couplingsEMA, tolerance);
+        }
+
+        step += 1;
+    }
+    
     return out;
 }
+
+
 
 }
 
 // Explicit template instantiations
 template Inverse::maxLikelihoodTraj Inverse::maxLikelihood<EqModel>(
-    EqModel& model, Sample& sample, int maxSteps, double learningRate, int numSims, int numBurn, bool calcLLH
+    EqModel& model, 
+    Sample& sample, 
+    int maxSteps, 
+    double learningRate, 
+    double alpha, 
+    double tolerance, 
+    int numSims, 
+    int numBurn, 
+    bool calcLLH
 );
 
 

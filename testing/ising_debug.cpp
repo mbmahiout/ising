@@ -46,9 +46,11 @@ int main() {
     double lr {0.01};
     int numBurn {1000};
     bool calcLLH {true};
+    double alpha {0.1};
+    double tol {1e-5};
 
     Timer t;
-    Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, numSims, numBurn, calcLLH)};  
+    Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, alpha, tol, numSims, numBurn, calcLLH)};  
     std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
     std::cout << "Fields:\n" << ml_model.getFields().transpose() << '\n';
     std::cout << "Couplings:\n" << ml_model.getCouplings() << '\n';
