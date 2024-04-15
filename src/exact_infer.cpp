@@ -9,6 +9,7 @@
 
 /*
 Next steps:
+    - include convergence criterion for maxLikelihood
     - profile and implement NEQ version
 */
 
