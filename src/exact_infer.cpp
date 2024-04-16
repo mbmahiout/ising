@@ -42,6 +42,45 @@ bool hasConverged(
     return (fieldsConverged && couplingsConverged);
 }
 
+AdamState<Eigen::VectorXd> initAdamState(const Eigen::VectorXd& params) {
+    AdamState<Eigen::VectorXd> state;
+    state.m = Eigen::VectorXd::Zero(params.size());
+    state.v = Eigen::VectorXd::Zero(params.size());
+    state.t = 0;
+    return state;
+}
+
+AdamState<Eigen::MatrixXd> initAdamState(const Eigen::MatrixXd& params) {
+    AdamState<Eigen::MatrixXd> state;
+    state.m = Eigen::MatrixXd::Zero(params.rows(), params.cols());
+    state.v = Eigen::MatrixXd::Zero(params.rows(), params.cols());
+    state.t = 0;
+    return state;
+}
+
+template <typename T>
+T getAdamParamsChange(
+    T& grads,
+    AdamState<T>& state,
+    double learningRate,
+    double beta1,
+    double beta2,
+    double epsilon
+) {
+    state.t++;
+
+    state.m = beta1 * state.m + (1 - beta1) * grads;
+    state.v = beta2 * state.v + (1 - beta2) * grads.array().square().matrix();
+
+    T m_hat = state.m / (1 - std::pow(beta1, state.t));
+    T v_hat = state.v / (1 - std::pow(beta2, state.t));
+
+    return (learningRate * m_hat.array() / (v_hat.array().sqrt() + epsilon)).matrix();
+}
+
+
+
+
 
 template <typename T>
 maxLikelihoodTraj maxLikelihood(
@@ -49,6 +88,10 @@ maxLikelihoodTraj maxLikelihood(
     Sample& sample, 
     int maxSteps, 
     double learningRate,
+    bool useAdam,
+    double beta1,
+    double beta2,
+    double epsilon,
     double alpha,  // for EMA
     double tolerance,  // for convergence checking
     int numSims, 
@@ -56,6 +99,9 @@ maxLikelihoodTraj maxLikelihood(
     bool calcLLH
 ) {
     maxLikelihoodTraj out {};
+    
+    AdamState h_state {initAdamState(model.getFields())};
+    AdamState J_state {initAdamState(model.getCouplings())};
 
     Eigen::VectorXd fieldsEMA {model.getFields()};
     Eigen::MatrixXd couplingsEMA {model.getCouplings()};
@@ -77,9 +123,25 @@ maxLikelihoodTraj maxLikelihood(
         }  // else {
         //     std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
         // }
+
+        Eigen::VectorXd fieldsChange {};
+        Eigen::MatrixXd couplingsChange {};
+
+        if (useAdam) {
+            Eigen::VectorXd fieldsChange = getAdamParamsChange(dh, h_state, learningRate, beta1, beta2, epsilon);
+            Eigen::MatrixXd couplingsChange = getAdamParamsChange(dJ, J_state, learningRate, beta1, beta2, epsilon);
+        } else {
+            Eigen::VectorXd fieldsChange = learningRate * dh;
+            Eigen::MatrixXd couplingsChange = learningRate * dJ;
+        }
         
-        model.setFields(model.getFields() + learningRate * dh);
-        model.setCouplings(model.getCouplings() + learningRate * dJ);
+        std::cout << fieldsChange.rows() << 'x' << fieldsChange.cols() << '\n';
+        std::cout << model.getFields().rows() << 'x' << model.getFields().cols() << '\n';
+
+
+        model.setFields(model.getFields() + fieldsChange);
+        model.setCouplings(model.getCouplings() + couplingsChange);
+
         out.fieldsHistory.push_back(model.getFields());
         out.couplingsHistory.push_back(model.getCouplings());
 
@@ -113,13 +175,18 @@ template Inverse::maxLikelihoodTraj Inverse::maxLikelihood<EqModel>(
     EqModel& model, 
     Sample& sample, 
     int maxSteps, 
-    double learningRate, 
-    double alpha, 
-    double tolerance, 
+    double learningRate,
+    bool useAdam,
+    double beta1,
+    double beta2,
+    double epsilon,
+    double alpha,
+    double tolerance,
     int numSims, 
-    int numBurn, 
+    int numBurn,
     bool calcLLH
 );
+
 
 
 namespace EqInverse {

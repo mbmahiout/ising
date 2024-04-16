@@ -42,11 +42,37 @@ bool hasConverged(
 );
 
 template <typename T>
+struct AdamState {
+    T m;
+    T v;
+    int t;
+};
+
+AdamState<Eigen::VectorXd> initAdamState(const Eigen::VectorXd& params);
+
+AdamState<Eigen::MatrixXd> initAdamState(const Eigen::MatrixXd& params);
+
+template <typename T>
+T getAdamParamsChange(
+    T& params, 
+    T& grads,
+    AdamState<T>& state,
+    double learningRate,
+    double beta1,
+    double beta2,
+    double epsilon
+);
+
+template <typename T>
 maxLikelihoodTraj maxLikelihood(
     T& model, 
     Sample& sample, 
     int maxSteps,
-    double learningRate=0.1,  // calibrate 
+    double learningRate=0.1,  // calibrate
+    bool useAdam = true,
+    double beta1 = 0.9,
+    double beta2 = 0.999,
+    double epsilon = 1e-8,
     double alpha=0.1,  // calibrate
     double tolerance=1e-5,  // calibrate
     int numSims=0, 
