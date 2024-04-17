@@ -75,12 +75,11 @@ T getAdamParamsChange(
     T m_hat = state.m / (1 - std::pow(beta1, state.t));
     T v_hat = state.v / (1 - std::pow(beta2, state.t));
 
+    //std::cout << "Step " << step << ": Gradient norm = " << grads.norm() << std::endl;
+    // std::cout << "m_hat max: " << m_hat.maxCoeff() << ", v_hat max: " << v_hat.maxCoeff();
+
     return (learningRate * m_hat.array() / (v_hat.array().sqrt() + epsilon)).matrix();
 }
-
-
-
-
 
 template <typename T>
 maxLikelihoodTraj maxLikelihood(
@@ -116,28 +115,32 @@ maxLikelihoodTraj maxLikelihood(
 
         // could be if EqModel, else if NeqModel, else throw exception
         if constexpr (std::is_same_v<T, EqModel>) {
-            if (numSims > 0) 
+            if (numSims > 0) {
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample, numSims, numBurn);
-            else
+            } else {
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample);
+            }
         }  // else {
         //     std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
         // }
+
+//        std::cout << "dh max: " << dh.maxCoeff() << ", dJ max: " << dJ.maxCoeff();
 
         Eigen::VectorXd fieldsChange {};
         Eigen::MatrixXd couplingsChange {};
 
         if (useAdam) {
-            Eigen::VectorXd fieldsChange = getAdamParamsChange(dh, h_state, learningRate, beta1, beta2, epsilon);
-            Eigen::MatrixXd couplingsChange = getAdamParamsChange(dJ, J_state, learningRate, beta1, beta2, epsilon);
+            fieldsChange = getAdamParamsChange(dh, h_state, learningRate, beta1, beta2, epsilon);
+            couplingsChange = getAdamParamsChange(dJ, J_state, learningRate, beta1, beta2, epsilon);
         } else {
-            Eigen::VectorXd fieldsChange = learningRate * dh;
-            Eigen::MatrixXd couplingsChange = learningRate * dJ;
+            fieldsChange = learningRate * dh;
+            couplingsChange = learningRate * dJ;
         }
-        
-        std::cout << fieldsChange.rows() << 'x' << fieldsChange.cols() << '\n';
-        std::cout << model.getFields().rows() << 'x' << model.getFields().cols() << '\n';
 
+        // if (fieldsChange.hasNaN() || couplingsChange.hasNaN()) {
+        //     std::cerr << "NaN detected at step " << step << std::endl;
+        //     break;  // Exit if NaN detected
+        // }
 
         model.setFields(model.getFields() + fieldsChange);
         model.setCouplings(model.getCouplings() + couplingsChange);

@@ -5,7 +5,15 @@
 #include "timer.h"
  #include <iostream>
 #include <Eigen/Dense>
+#include <string>
 
+
+template <typename T>
+void printParams(const T& model, std::string_view modelName) {
+    std::cout << modelName << ":\n";
+    std::cout << "h:\n" << model.getFields().transpose() << '\n';
+    std::cout << "J:\n" << model.getCouplings() << '\n';
+}
 
 
 int main() {
@@ -18,12 +26,10 @@ int main() {
 
     EqModel true_model {J, h};
 
-    std::cout << true_model.getState() << '\n';
-
     Sample true_sim {true_model.simulate(numSims)};
-    std::cout << "Fields:\n" << true_model.getFields().transpose() << '\n';
-    std::cout << "Couplings:\n" << true_model.getCouplings() << '\n';
-    std::cout << '\n';
+
+    printParams(true_model, "True model");
+
     std::cout << '\n';
 
     // inferred model
@@ -42,27 +48,29 @@ int main() {
     /*
         INFERENCE
     */
-    int maxSteps {1000};
+    int maxSteps {5000};
     double lr {0.01};
     int numBurn {1000};
-    bool calcLLH {true};
+    bool calcLLH {false};
     double alpha {0.1};
     double tol {1e-5};
+    bool useAdam {false};
 
     Timer t;
-    Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, alpha, tol, numSims, numBurn, calcLLH)};  
+    Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, useAdam)};  
     std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
-    std::cout << "Fields:\n" << ml_model.getFields().transpose() << '\n';
-    std::cout << "Couplings:\n" << ml_model.getCouplings() << '\n';
-    
-    std::cout << '\n';
+
     std::cout << '\n';
 
-    std::cout << "LLHs:\n";
-    for (double llh : ml_out.LLHs) {
-        std::cout << llh << '\n';
+    printParams(ml_model, "ML model");
 
-    }
+    std::cout << '\n';
+
+    // std::cout << "LLHs:\n";
+    // for (double llh : ml_out.LLHs) {
+    //     std::cout << llh << '\n';
+
+    // }
 
     // t.reset();
     // Inverse::maxLikelihoodTraj pl_out {Inverse::maxLikelihood(pl_model, true_sim, maxSteps, lr)};  

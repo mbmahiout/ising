@@ -72,7 +72,7 @@ maxLikelihoodTraj maxLikelihood(
     bool useAdam = true,
     double beta1 = 0.9,
     double beta2 = 0.999,
-    double epsilon = 1e-8,
+    double epsilon = 1e-5,
     double alpha=0.1,  // calibrate
     double tolerance=1e-5,  // calibrate
     int numSims=0, 
