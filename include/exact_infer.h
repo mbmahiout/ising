@@ -54,7 +54,6 @@ AdamState<Eigen::MatrixXd> initAdamState(const Eigen::MatrixXd& params);
 
 template <typename T>
 T getAdamParamsChange(
-    T& params, 
     T& grads,
     AdamState<T>& state,
     double learningRate,

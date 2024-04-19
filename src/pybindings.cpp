@@ -53,6 +53,7 @@ PYBIND11_MODULE(ising, m) {
         // for convergence testing
         .def_readwrite("fieldsDiffsEMA", &Inverse::maxLikelihoodTraj::fieldsDiffsEMA)
         .def_readwrite("couplingsDiffsEMA", &Inverse::maxLikelihoodTraj::couplingsDiffsEMA)
+
         .def_readwrite("fieldsGrads", &Inverse::maxLikelihoodTraj::fieldsGrads)
         .def_readwrite("couplingsGrads", &Inverse::maxLikelihoodTraj::couplingsGrads)
 
@@ -66,6 +67,10 @@ PYBIND11_MODULE(ising, m) {
           py::arg("sample"), 
           py::arg("maxSteps"), 
           py::arg("learningRate") = 0.1,
+          py::arg("useAdam") = true,
+          py::arg("beta1") = 0.9,
+          py::arg("beta2") = 0.999,
+          py::arg("epsilon") = 0.1,
           py::arg("alpha") = 0.1, 
           py::arg("tolerance") = 1e-5, 
           py::arg("numSims") = 0, 
