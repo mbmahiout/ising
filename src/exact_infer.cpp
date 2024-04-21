@@ -139,7 +139,7 @@ maxLikelihoodTraj maxLikelihood(
 
         // if (fieldsChange.hasNaN() || couplingsChange.hasNaN()) {
         //     std::cerr << "NaN detected at step " << step << std::endl;
-        //     break;  // Exit if NaN detected
+        //     break;  // exit if NaN detected
         // }
 
         model.setFields(model.getFields() + fieldsChange);
@@ -212,28 +212,48 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
     return {dh, dJ};
 }
 
-
-
 std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample& sample) {
 
-    Eigen::MatrixXd states {sample.getStates().cast<double>()};
-    Eigen::MatrixXd states_transposed {states.transpose()};
-   
-    Eigen::MatrixXd effFields {model.getEffectiveFields(states)};
-    Eigen::MatrixXd tanh_effFields {effFields.array().tanh().matrix()};
+    Eigen::MatrixXd states = sample.getStates().cast<double>();
+    Eigen::MatrixXd effFields = model.getEffectiveFields(states);
+    Eigen::MatrixXd tanh_effFields = effFields.unaryExpr([](double elem) { return std::tanh(elem); });
 
-    Eigen::MatrixXd dh_terms {states - tanh_effFields};  
-    int numBins {sample.getNumBins()}; 
-    Eigen::VectorXd dh {dh_terms.rowwise().sum() / numBins};
+    Eigen::MatrixXd dh_terms = states - tanh_effFields;  
+    Eigen::VectorXd dh = dh_terms.rowwise().mean();
 
-    int numUnits {model.getNumUnits()};
-    Eigen::MatrixXd dJ {Eigen::MatrixXd::Zero(numUnits, numUnits)};
-    for (int t {0}; t < numBins; ++t) {
-        dJ += dh_terms.col(t) * states.col(t).transpose();
+    int numBins = sample.getNumBins();
+    int numUnits = model.getNumUnits();
+    Eigen::MatrixXd dJ = Eigen::MatrixXd::Zero(numUnits, numUnits);
+    
+    for (int t = 0; t < numBins; ++t) {
+        dJ.noalias() += dh_terms.col(t) * states.col(t).transpose();
     }
     dJ /= numBins;
+    
     return {dh, dJ};
 }
+
+
+// std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample& sample) {
+
+//     Eigen::MatrixXd states {sample.getStates().cast<double>()};
+//     Eigen::MatrixXd states_transposed {states.transpose()};  // unused!!!
+   
+//     Eigen::MatrixXd effFields {model.getEffectiveFields(states)};
+//     Eigen::MatrixXd tanh_effFields {effFields.array().tanh().matrix()};
+
+//     Eigen::MatrixXd dh_terms {states - tanh_effFields};  
+//     int numBins {sample.getNumBins()}; 
+//     Eigen::VectorXd dh {dh_terms.rowwise().sum() / numBins};
+
+//     int numUnits {model.getNumUnits()};
+//     Eigen::MatrixXd dJ {Eigen::MatrixXd::Zero(numUnits, numUnits)};
+//     for (int t {0}; t < numBins; ++t) {
+//         dJ += dh_terms.col(t) * states.col(t).transpose();
+//     }
+//     dJ /= numBins;
+//     return {dh, dJ};
+// }
 
 }
 

@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 option(BUILD_TESTS "Build C++ testing/debugging binaries" OFF)
 
-
 include_directories(include/)
 include_directories(/opt/homebrew/include/eigen3)
 

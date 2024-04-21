@@ -48,7 +48,7 @@ int main() {
     /*
         INFERENCE
     */
-    int maxSteps {5000};
+    int maxSteps {1000};
     double lr {0.01};
     int numBurn {1000};
     bool calcLLH {false};
@@ -57,26 +57,24 @@ int main() {
     bool useAdam {false};
 
     Timer t;
-    Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, useAdam)};  
-    std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
+    // Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, useAdam)};  
+    // std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
 
-    std::cout << '\n';
+    // std::cout << '\n';
 
-    printParams(ml_model, "ML model");
+    // printParams(ml_model, "ML model");
 
-    std::cout << '\n';
-
-    // std::cout << "LLHs:\n";
-    // for (double llh : ml_out.LLHs) {
-    //     std::cout << llh << '\n';
-
-    // }
+    // std::cout << '\n';
 
     // t.reset();
-    // Inverse::maxLikelihoodTraj pl_out {Inverse::maxLikelihood(pl_model, true_sim, maxSteps, lr)};  
-    // std::cout << "PL inference took: " << t.elapsed() << " seconds.\n";
-    // std::cout << "Fields:\n" << pl_model.getFields().transpose() << '\n';
-    // std::cout << "Couplings:\n" << pl_model.getCouplings() << '\n';
+    Inverse::maxLikelihoodTraj pl_out {Inverse::maxLikelihood(pl_model, true_sim, maxSteps, lr, useAdam)};  
+    std::cout << "PL inference took: " << t.elapsed() << " seconds.\n";
+    
+    std::cout << '\n';
+
+    printParams(pl_model, "PL model");
+
+    std::cout << '\n';
 
     return 0;
 }
