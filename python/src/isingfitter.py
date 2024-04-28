@@ -7,20 +7,30 @@ from src.utils import stable_arctanh, get_inv_mat
 
 import numpy as np
 
-
 class IsingFitter:
     def __init__(self, model):
         self.model = model
 
-        # parameters trajectory
+        # parameters history
         self.fields_history = []
         self.couplings_history = []
 
-        # for convergence testing
-        self.fields_diffs = []
-        self.couplings_diffs = []
+        # gradients
         self.fields_grads = []
         self.couplings_grads = []
+
+        # parameter statistics
+        self.av_fields = []
+        self.av_couplings = []
+
+        self.sd_fields = []
+        self.sd_couplings = []
+
+        self.min_fields = []
+        self.min_couplings = []
+
+        self.max_fields = []
+        self.max_couplings = []
 
         # optionally, for testing
         self.llhs = []
@@ -118,13 +128,13 @@ class EqFitter(IsingFitter):
             beta1=0.9,
             beta2=0.999,
             epsilon=1e-5,
-            alpha=0.1,
+            win_size=10,
             tolerance=1e-5,
             num_sims=0,
             num_burn=0,
             calc_llh=False
     ):
-        out = ising.maxLikelihoodEq(
+        out = ising.gradientAscentEQ(
             self.model,
             sample,
             max_steps,
@@ -133,24 +143,35 @@ class EqFitter(IsingFitter):
             beta1,
             beta2,
             epsilon,
-            alpha,
+            win_size,
             tolerance,
             num_sims,
             num_burn,
             calc_llh
         )
+        # parameters history
+        self.fields_history = out.params.fields
+        self.couplings_history = out.params.couplings
 
-        self.fields_history = out.fieldsHistory
-        self.couplings_history = out.couplingsHistory
+        # gradients
+        self.fields_grads = out.grads.fieldsGrads
+        self.couplings_grads = out.grads.couplingsGrads
 
-        self.fields_diffs = out.fieldsDiffsEMA
-        self.couplings_diffs = out.couplingsDiffsEMA
-        self.fields_grads = out.fieldsGrads
-        self.couplings_grads = out.couplingsGrads
+        # parameter statistics
+        self.av_fields = out.stats.avFields
+        self.av_couplings = out.stats.avCouplings
+
+        self.sd_fields = out.stats.sdFields
+        self.sd_couplings = out.stats.sdCouplings
+
+        self.min_fields = out.stats.minFields
+        self.min_couplings = out.stats.minCouplings
+
+        self.max_fields = out.stats.maxFields
+        self.max_couplings = out.stats.maxCouplings
 
         if calc_llh:
-            self.llhs = out.LLHs
-        # Note: might use **kwargs like original implementation
+            self.llhs = out.stats.LLHs
 
     def _get_nmf_couplings(self, sample):
         ccorrs_inv = self._get_ccorrs_inv(sample)
