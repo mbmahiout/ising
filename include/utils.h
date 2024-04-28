@@ -9,6 +9,13 @@
 
 
 namespace Misc {
+    template <typename T>
+    double getMatrixStd(const T& m) {
+        double mean {m.mean()};
+        double sumOfSquares {(m.array() - mean).square().sum()};
+        return std::sqrt(sumOfSquares / (m.size() - 1));
+    }
+
     double getUniformSample(const double leftEdge, const double rightEdge);
 
     Eigen::VectorXd getUniformVector(const int len, const double leftEdge, const double rightEdge);

@@ -1,6 +1,6 @@
 #include "sample.h"
 #include "models.h"
-#include "exact_infer.h"
+#include "grad_ascent.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h> 
 #include <pybind11/eigen.h>
@@ -42,27 +42,42 @@ PYBIND11_MODULE(ising, m) {
             // simulation
             .def("simulate", &EqModel::simulate);
 
-    // inverse
-    py::class_<Inverse::maxLikelihoodTraj>(m, "maxLikelihoodTraj")
+    // gradient ascent
+    py::class_<Inverse::paramsHistory>(m, "paramsHistory")
         .def(py::init<>())
-        
-        // parameters trajectory
-        .def_readwrite("fieldsHistory", &Inverse::maxLikelihoodTraj::fieldsHistory)
-        .def_readwrite("couplingsHistory", &Inverse::maxLikelihoodTraj::couplingsHistory)
-        
-        // for convergence testing
-        .def_readwrite("fieldsDiffsEMA", &Inverse::maxLikelihoodTraj::fieldsDiffsEMA)
-        .def_readwrite("couplingsDiffsEMA", &Inverse::maxLikelihoodTraj::couplingsDiffsEMA)
+        .def_readwrite("fields", &Inverse::paramsHistory::fields)
+        .def_readwrite("couplings", &Inverse::paramsHistory::couplings);
 
-        .def_readwrite("fieldsGrads", &Inverse::maxLikelihoodTraj::fieldsGrads)
-        .def_readwrite("couplingsGrads", &Inverse::maxLikelihoodTraj::couplingsGrads)
+    py::class_<Inverse::gradsHistory>(m, "gradsHistory")
+        .def(py::init<>())
+        .def_readwrite("fieldsGrads", &Inverse::gradsHistory::fieldsGrads)
+        .def_readwrite("couplingsGrads", &Inverse::gradsHistory::couplingsGrads);
 
-        // optionally (for testing)
-        .def_readwrite("LLHs", &Inverse::maxLikelihoodTraj::LLHs);
+    py::class_<Inverse::statsHistory>(m, "statsHistory")
+        .def(py::init<>())
+        .def_readwrite("avFields", &Inverse::statsHistory::avFields)
+        .def_readwrite("avCouplings", &Inverse::statsHistory::avCouplings)
 
-    m.def("maxLikelihoodEq", 
-          &Inverse::maxLikelihood<EqModel>,
-          "Gradient ascent for LLH maximization",
+        .def_readwrite("sdFields", &Inverse::statsHistory::sdFields)
+        .def_readwrite("sdCouplings", &Inverse::statsHistory::sdCouplings)
+
+        .def_readwrite("minFields", &Inverse::statsHistory::minFields)
+        .def_readwrite("minCouplings", &Inverse::statsHistory::minCouplings)
+
+        .def_readwrite("maxFields", &Inverse::statsHistory::maxFields)
+        .def_readwrite("maxCouplings", &Inverse::statsHistory::maxCouplings)
+
+        .def_readwrite("LLHs", &Inverse::statsHistory::LLHs);
+
+    py::class_<Inverse::gradAscOut>(m, "gradAscOut")
+        .def(py::init<>())
+        .def_readwrite("params", &Inverse::gradAscOut::params)
+        .def_readwrite("grads", &Inverse::gradAscOut::grads)
+        .def_readwrite("stats", &Inverse::gradAscOut::stats);
+
+    m.def("gradientAscentEQ", 
+          &Inverse::gradientAscent<EqModel>,
+          "Gradient ascent for LLH/PL maximization",
           py::arg("model"), 
           py::arg("sample"), 
           py::arg("maxSteps"), 
@@ -71,7 +86,7 @@ PYBIND11_MODULE(ising, m) {
           py::arg("beta1") = 0.9,
           py::arg("beta2") = 0.999,
           py::arg("epsilon") = 0.1,
-          py::arg("alpha") = 0.1, 
+          py::arg("winSize") = 10,
           py::arg("tolerance") = 1e-5, 
           py::arg("numSims") = 0, 
           py::arg("numBurn") = 0, 

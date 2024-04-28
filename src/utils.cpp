@@ -4,6 +4,7 @@
 #include <random>
 #include "utils.h"
 
+
 namespace Misc {
     double getUniformSample(const double leftEdge, const double rightEdge) {
         std::uniform_real_distribution<double> uniformDist(leftEdge, rightEdge);

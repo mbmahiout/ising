@@ -1,6 +1,6 @@
 #include "sample.h"
 #include "models.h"
-#include "exact_infer.h"
+#include "grad_ascent.h"
 #include "utils.h"
 #include "timer.h"
  #include <iostream>
@@ -48,7 +48,7 @@ int main() {
     /*
         INFERENCE
     */
-    int maxSteps {1000};
+    int maxSteps {100};
     double lr {0.01};
     int numBurn {1000};
     bool calcLLH {false};
@@ -57,7 +57,7 @@ int main() {
     bool useAdam {false};
 
     Timer t;
-    // Inverse::maxLikelihoodTraj ml_out {Inverse::maxLikelihood(ml_model, true_sim, maxSteps, lr, useAdam)};  
+    // Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam)};  
     // std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
 
     // std::cout << '\n';
@@ -67,7 +67,7 @@ int main() {
     // std::cout << '\n';
 
     // t.reset();
-    Inverse::maxLikelihoodTraj pl_out {Inverse::maxLikelihood(pl_model, true_sim, maxSteps, lr, useAdam)};  
+    Inverse::gradAscOut pl_out {Inverse::gradientAscent(pl_model, true_sim, maxSteps, lr, useAdam)};  
     std::cout << "PL inference took: " << t.elapsed() << " seconds.\n";
     
     std::cout << '\n';
