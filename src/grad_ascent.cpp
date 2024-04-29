@@ -261,7 +261,12 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
     Eigen::VectorXd dh = dh_terms.rowwise().mean();
 
     int numBins = sample.getNumBins();
-    Eigen::MatrixXd dJ = dh_terms * states.transpose(); // can we move into maximum likelihood?
+    int numUnits = model.getNumUnits();
+    Eigen::MatrixXd dJ = Eigen::MatrixXd::Zero(numUnits, numUnits);
+
+    for (int t = 0; t < numBins; ++t) {
+        dJ.noalias() += dh_terms.col(t) * states.col(t).transpose();
+    }
     dJ /= numBins;
 
     return {dh, dJ};
