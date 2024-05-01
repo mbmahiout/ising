@@ -268,6 +268,7 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
         dJ.noalias() += dh_terms.col(t) * states.col(t).transpose();
     }
     dJ /= numBins;
+    dJ.diagonal().setZero();
 
     return {dh, dJ};
 }
