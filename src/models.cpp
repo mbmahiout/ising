@@ -6,6 +6,7 @@
 #include "models.h"
 #include <boost/dynamic_bitset.hpp>
 
+// abstract base class
 Eigen::VectorXd IsingModel::getEffectiveFields(Eigen::VectorXd stateDouble) const {
     return m_h + m_J * stateDouble;
 }
@@ -33,8 +34,8 @@ Eigen::MatrixXd IsingModel::getEffectiveFields(Eigen::MatrixXd statesDouble) con
     return simulation;
 }
 
-
-double EqModel::getEnergyChange(int idx) {
+// equilibrium model
+double EqModel::getEnergyChange(int idx) const {
     double sumTerm{0};
     for (int i {0}; i < m_numUnits; ++i) {
         if (i == idx) continue;
@@ -107,19 +108,17 @@ double EqModel::getLLH(Sample& sample) const {
     return LLH;    
 }
 
+// non-equilibrium model
+Eigen::VectorXd NeqModel::getProbActive() const {
+    Eigen::VectorXd effFields {getEffectiveFields(m_state.cast<double>())};
+    return (1 + (- 2 * effFields.array()).exp()).inverse();
+}
 
-
-
-// Eigen::VectorXd NeqModel::getProbActive() const {
-//     Eigen::VectorXd effFields {getEffectiveFields(m_state.cast<double>())};
-//     return (1 + (- 2 * effFields.array()).exp()).inverse();
-// }
-
-// void NeqModel::updateState() {
-//     Eigen::VectorXd probActive {getProbActive()};
-//     Eigen::VectorXd u {Misc::getUniformVector(m_numUnits, 0, 1)};
-//     Eigen::VectorXi activeBools {(u.array() < probActive.array()).cast<int>()};
-//     Eigen::VectorXi newState { 2 * activeBools.array() - 1 };
-//     setState(newState); // should we move?
-// }
+void NeqModel::updateState() {
+    Eigen::VectorXd probActive {getProbActive()};
+    Eigen::VectorXd u {Misc::getUniformVector(m_numUnits, 0, 1)};
+    Eigen::VectorXi activeBools {(u.array() < probActive.array()).cast<int>()};
+    Eigen::VectorXi newState { 2 * activeBools.array() - 1 };
+    setState(newState); // should we move?
+}
 

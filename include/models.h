@@ -52,14 +52,27 @@ public:
     : IsingModel(J, h)
     {}
 
-    double getEnergyChange(int idx); 
+    // functions for simulation
+    double getEnergyChange(int idx) const; 
     void updateState() override;
-    Eigen::MatrixXi genFullStateSpace() const;  // done
-    double getHamiltonian(const Eigen::VectorXi& state) const;  // done
-    double getPartitionFunc() const;  // done
-    double getLLH(Sample& sample) const;  // done
+
+    // functions for likelihood calculation
+    Eigen::MatrixXi genFullStateSpace() const; 
+    double getHamiltonian(const Eigen::VectorXi& state) const;
+    double getPartitionFunc() const;
+    double getLLH(Sample& sample) const;
 
 };
 
+class NeqModel: public IsingModel {
+public:
+    NeqModel(const Eigen::MatrixXd& J, const Eigen::VectorXd& h)
+    : IsingModel(J, h)
+    {}
+
+    // functions for simulation
+    Eigen::VectorXd NeqModel::getProbActive() const;
+    void updateState() override;
+}
 
 #endif //MODELS_H
