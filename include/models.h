@@ -71,8 +71,8 @@ public:
     {}
 
     // functions for simulation
-    Eigen::VectorXd NeqModel::getProbActive() const;
+    Eigen::VectorXd getProbActive() const;
     void updateState() override;
-}
+};
 
 #endif //MODELS_H

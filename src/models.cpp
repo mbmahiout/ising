@@ -110,7 +110,8 @@ double EqModel::getLLH(Sample& sample) const {
 
 // non-equilibrium model
 Eigen::VectorXd NeqModel::getProbActive() const {
-    Eigen::VectorXd effFields {getEffectiveFields(m_state.cast<double>())};
+    Eigen::VectorXd stateDouble {m_state.cast<double>()};
+    Eigen::VectorXd effFields {getEffectiveFields(stateDouble)};
     return (1 + (- 2 * effFields.array()).exp()).inverse();
 }
 
