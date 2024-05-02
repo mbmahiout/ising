@@ -37,41 +37,42 @@ int main() {
     /*
         INFERENCE
     */
-    // // inferred models
-    // const Eigen::MatrixXd J1 {Parameters::getGaussianCouplings(numUnits, 0.0, 1.0)};
-    // const Eigen::VectorXd h1 {Parameters::getUniformFields(numUnits, -1.3, 1.3)}; 
+    // inferred models
+    const Eigen::MatrixXd J1 {Parameters::getGaussianCouplings(numUnits, 0.0, 1.0)};
+    const Eigen::VectorXd h1 {Parameters::getUniformFields(numUnits, -1.3, 1.3)}; 
 
-    // EqModel ml_model {J1, h1};
+    NeqModel ml_model {J1, h1};
 
     // const Eigen::MatrixXd J2 {Parameters::getGaussianCouplings(numUnits, 0.0, 1.0)};
     // const Eigen::VectorXd h2 {Parameters::getUniformFields(numUnits, -1.3, 1.3)}; 
 
     // EqModel pl_model {J2, h2};
 
-    // int maxSteps {100};
-    // double lr {0.01};
-    // int numBurn {1000};
-    // bool calcLLH {false};
-    // double alpha {0.1};
-    // double tol {1e-5};
-    // bool useAdam {false};
+    int maxSteps {100};
+    double lr {0.01};
+    int numBurn {1000};
+    bool calcLLH {false};
+    double alpha {0.1};
+    double tol {1e-5};
+    bool useAdam {false};
 
-    // Timer t;
+    Timer t;
 
     /*
         ML INFERENCE
     */
 
-    // Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam)};  
-    // std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
+    //Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam)};  
+    Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam)};  
+    std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
 
-    // std::cout << '\n';
+    std::cout << '\n';
 
-    // printParams(ml_model, "ML model");
+    printParams(ml_model, "ML model");
 
-    // std::cout << '\n';
+    std::cout << '\n';
 
-    // t.reset();
+    t.reset();
 
     /*
         PL INFERENCE

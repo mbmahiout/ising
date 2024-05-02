@@ -51,9 +51,9 @@ gradAscOut gradientAscent(
             } else {
                 std::tie(dh, dJ) = EqInverse::getGradients(model, sample);
             }
-        }  // else {
-        //     std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
-        // }
+        } else {
+            std::tie(dh, dJ) = NeqInverse::getGradients(model, sample);
+        }
 
         Eigen::VectorXd fieldsChange {};
         Eigen::MatrixXd couplingsChange {};
@@ -229,6 +229,22 @@ template Inverse::gradAscOut Inverse::gradientAscent<EqModel>(
     bool calcLLH
 );
 
+template Inverse::gradAscOut Inverse::gradientAscent<NeqModel>(
+    NeqModel& model, 
+    Sample& sample, 
+    int maxSteps, 
+    double learningRate,
+    bool useAdam,
+    double beta1,
+    double beta2,
+    double epsilon,
+    int winSize,
+    double tolerance, 
+    int numSims, 
+    int numBurn,
+    bool calcLLH
+);
+
 
 namespace EqInverse {
 std::pair<Eigen::VectorXd, Eigen::MatrixXd> simulationStep(EqModel& model, int numSims, int numBurn) {
@@ -252,16 +268,15 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
 }
 
 std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample& sample) {
-
-    Eigen::MatrixXd states = sample.getStates().cast<double>();
-    Eigen::MatrixXd effFields = model.getEffectiveFields(states);
-    Eigen::MatrixXd tanh_effFields = effFields.unaryExpr([](double elem) { return std::tanh(elem); });
+    Eigen::MatrixXd states {sample.getStates().cast<double>()};
+    Eigen::MatrixXd effFields {model.getEffectiveFields(states)};
+    Eigen::MatrixXd tanh_effFields {effFields.unaryExpr([](double elem) { return std::tanh(elem); })};
 
     Eigen::MatrixXd dh_terms = states - tanh_effFields;  
     Eigen::VectorXd dh = dh_terms.rowwise().mean();
 
-    int numBins = sample.getNumBins();
-    int numUnits = model.getNumUnits();
+    int numBins {sample.getNumBins()};
+    int numUnits {model.getNumUnits()};
     Eigen::MatrixXd dJ = Eigen::MatrixXd::Zero(numUnits, numUnits);
 
     for (int t = 0; t < numBins; ++t) {
@@ -275,14 +290,31 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
 
 }
 
-// namespace NeqInverse {
+namespace NeqInverse {
 
-// std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients() {
+// review logic and debug
+std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample) {
+    int numBins {sample.getNumBins()};
+    int numUnits {model.getNumUnits()};
 
-//     Eigen::VectorXd dh {Eigen::VectorXd::Zero(numUnits)};
-//     Eigen::MatrixXd dJ {Eigen::MatrixXd::Zero(numUnits, numUnits)};
+    Eigen::MatrixXd states {sample.getStates().cast<double>()};
+    Eigen::MatrixXd statesForwardShifted {states(Eigen::all, Eigen::seq(1, Eigen::last))};
+    Eigen::MatrixXd statesBackwardShifted {states(Eigen::all, Eigen::seq(0, Eigen::last-1))};
 
-//     return {dh, dJ};
-// }
+    Eigen::MatrixXd effFields {model.getEffectiveFields(statesBackwardShifted)};
+    Eigen::MatrixXd tanh_effFields {effFields.unaryExpr([](double elem) { return std::tanh(elem); })};
 
-// }
+    Eigen::MatrixXd dh_terms = statesForwardShifted - tanh_effFields;  
+    Eigen::VectorXd dh = dh_terms.rowwise().mean();
+
+    Eigen::MatrixXd dJ = Eigen::MatrixXd::Zero(numUnits, numUnits);
+    for (int t = 0; t < numBins; ++t) {
+        dJ.noalias() += dh_terms.col(t+1) * states.col(t).transpose();
+    }
+    dJ /= numBins;
+    dJ.diagonal().setZero();
+
+    return {dh, dJ};
+}
+
+}

@@ -73,6 +73,10 @@ public:
     // functions for simulation
     Eigen::VectorXd getProbActive() const;
     void updateState() override;
+
+    // functions for likelihood calculation
+    double getLLH(Sample& sample) const;
+
 };
 
 #endif //MODELS_H

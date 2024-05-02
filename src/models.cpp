@@ -123,3 +123,6 @@ void NeqModel::updateState() {
     setState(newState); // should we move?
 }
 
+double NeqModel::getLLH(Sample& sample) const {
+    return 0;    
+}

@@ -140,10 +140,10 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
 
 }
 
-// namespace NeqInverse {
+namespace NeqInverse {
 
-// std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample);
+std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample);
 
-// }
+}
 
 #endif //GRAD_ASCENT_H
