@@ -48,7 +48,7 @@ gradAscOut gradientAscent(
     Sample& sample, 
     int maxSteps,
     double learningRate = 0.1,
-    bool useAdam = true,
+    bool useAdam = false,
     double beta1 = 0.9,
     double beta2 = 0.999,
     double epsilon = 1e-5,

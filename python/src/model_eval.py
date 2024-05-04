@@ -9,7 +9,7 @@ from ipywidgets import HBox, VBox, widgets
 from IPython.display import display
 import os
 
-from utils import get_rmse
+from src.utils import get_rmse
 
 
 class IsingEval: 

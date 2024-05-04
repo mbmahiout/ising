@@ -292,7 +292,6 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(EqModel& model, Sample&
 
 namespace NeqInverse {
 
-// review logic and debug
 std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample& sample) {
     int numBins {sample.getNumBins()};
     int numUnits {model.getNumUnits()};

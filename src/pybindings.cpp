@@ -42,6 +42,22 @@ PYBIND11_MODULE(ising, m) {
             // simulation
             .def("simulate", &EqModel::simulate);
 
+    py::class_<NeqModel, std::shared_ptr<NeqModel>>(m, "NeqModel")
+            // constructor
+            .def(py::init<Eigen::MatrixXd, Eigen::VectorXd>())
+            
+            // setters
+            .def("setFields", &NeqModel::setFields)
+            .def("setCouplings", &NeqModel::setCouplings)
+
+            // getters
+            .def("getNumUnits", &NeqModel::getNumUnits)
+            .def("getFields", &NeqModel::getFields)
+            .def("getCouplings", &NeqModel::getCouplings)
+            
+            // simulation
+            .def("simulate", &NeqModel::simulate);
+
     // gradient ascent
     py::class_<Inverse::paramsHistory>(m, "paramsHistory")
         .def(py::init<>())
@@ -77,12 +93,12 @@ PYBIND11_MODULE(ising, m) {
 
     m.def("gradientAscentEQ", 
           &Inverse::gradientAscent<EqModel>,
-          "Gradient ascent for LLH/PL maximization",
+          "Gradient ascent for EQ LLH/PL maximization",
           py::arg("model"), 
           py::arg("sample"), 
           py::arg("maxSteps"), 
           py::arg("learningRate") = 0.1,
-          py::arg("useAdam") = true,
+          py::arg("useAdam") = false,
           py::arg("beta1") = 0.9,
           py::arg("beta2") = 0.999,
           py::arg("epsilon") = 0.1,
@@ -92,4 +108,20 @@ PYBIND11_MODULE(ising, m) {
           py::arg("numBurn") = 0, 
           py::arg("calcLLH") = false);
 
+    m.def("gradientAscentNEQ",
+          &Inverse::gradientAscent<NeqModel>,
+          "Gradient ascent for NEQ LLH maximization",
+          py::arg("model"), 
+          py::arg("sample"), 
+          py::arg("maxSteps"), 
+          py::arg("learningRate") = 0.1,
+          py::arg("useAdam") = false,
+          py::arg("beta1") = 0.9,
+          py::arg("beta2") = 0.999,
+          py::arg("epsilon") = 0.1,
+          py::arg("winSize") = 10,
+          py::arg("tolerance") = 1e-5, 
+          py::arg("numSims") = 0, 
+          py::arg("numBurn") = 0, 
+          py::arg("calcLLH") = false);
 }

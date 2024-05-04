@@ -1,10 +1,9 @@
 import sys
-path2cpp_pkg = "/Users/mariusmahiout/Documents/repos/ising_core/build"
+path2cpp_pkg = "/Users/mariusmahiout/Documents/repos/ising_core/build" # change to relative import
 sys.path.append(path2cpp_pkg)
 import ising
 
 from src.utils import stable_arctanh, get_inv_mat
-
 import numpy as np
 
 class IsingFitter:
@@ -43,6 +42,31 @@ class IsingFitter:
         raise NotImplementedError(
             "Not implemented in base class: use EqFitter or NeqFitter."
         )
+
+    def set_gradient_ascent_outputs(self, out, calc_llh):
+        # parameters history
+        self.fields_history = out.params.fields
+        self.couplings_history = out.params.couplings
+
+        # gradients
+        self.fields_grads = out.grads.fieldsGrads
+        self.couplings_grads = out.grads.couplingsGrads
+
+        # parameter statistics
+        self.av_fields = out.stats.avFields
+        self.av_couplings = out.stats.avCouplings
+
+        self.sd_fields = out.stats.sdFields
+        self.sd_couplings = out.stats.sdCouplings
+
+        self.min_fields = out.stats.minFields
+        self.min_couplings = out.stats.minCouplings
+
+        self.max_fields = out.stats.maxFields
+        self.max_couplings = out.stats.maxCouplings
+
+        if calc_llh:
+            self.llhs = out.stats.LLHs
 
     def naive_mean_field(self, sample):
         self.check_sample_dims(sample)
@@ -114,10 +138,9 @@ class IsingFitter:
 
 class EqFitter(IsingFitter):
     def __init__(self, model):
+        if not isinstance(model, ising.EqModel):
+            raise ValueError("Model must be an equilibrium Ising model (EqModel).")
         super().__init__(model)
-        # might do a check, like:
-        # if not isinstance(model, ising.EqModel):
-        #     raise ValueError("Model must be an equilibrium Ising model (EqModel).")
 
     def maximize_likelihood(
             self,
@@ -149,29 +172,7 @@ class EqFitter(IsingFitter):
             num_burn,
             calc_llh
         )
-        # parameters history
-        self.fields_history = out.params.fields
-        self.couplings_history = out.params.couplings
-
-        # gradients
-        self.fields_grads = out.grads.fieldsGrads
-        self.couplings_grads = out.grads.couplingsGrads
-
-        # parameter statistics
-        self.av_fields = out.stats.avFields
-        self.av_couplings = out.stats.avCouplings
-
-        self.sd_fields = out.stats.sdFields
-        self.sd_couplings = out.stats.sdCouplings
-
-        self.min_fields = out.stats.minFields
-        self.min_couplings = out.stats.minCouplings
-
-        self.max_fields = out.stats.maxFields
-        self.max_couplings = out.stats.maxCouplings
-
-        if calc_llh:
-            self.llhs = out.stats.LLHs
+        self.set_gradient_ascent_outputs(out, calc_llh)
 
     def _get_nmf_couplings(self, sample):
         ccorrs_inv = self._get_ccorrs_inv(sample)
@@ -205,3 +206,42 @@ class EqFitter(IsingFitter):
                 couplings_est[i, j] = min_root
                 couplings_est[j, i] = couplings_est[i, j]
         return couplings_est
+
+
+class NeqFitter(IsingFitter):
+    def __init__(self, model):
+        if not isinstance(model, ising.NeqModel):
+            raise ValueError("Model must be a non-equilibrium Ising model (NeqModel).")
+        super().__init__(model)
+
+    def maximize_likelihood(
+            self,
+            sample,
+            max_steps,
+            learning_rate=0.1,
+            use_adam=True,
+            beta1=0.9,
+            beta2=0.999,
+            epsilon=1e-5,
+            win_size=10,
+            tolerance=1e-5,
+            num_sims=0,
+            num_burn=0,
+            calc_llh=False
+    ):
+        out = ising.gradientAscentNEQ(
+            self.model,
+            sample,
+            max_steps,
+            learning_rate,
+            use_adam,
+            beta1,
+            beta2,
+            epsilon,
+            win_size,
+            tolerance,
+            num_sims,
+            num_burn,
+            calc_llh
+        )
+        self.set_gradient_ascent_outputs(out, calc_llh)
