@@ -245,3 +245,58 @@ class NeqFitter(IsingFitter):
             calc_llh
         )
         self.set_gradient_ascent_outputs(out, calc_llh)
+
+    def _calc_F(self, A_naive, dcorrs, ccorrs_inv):
+        num_units = self.model.getNumUnits()
+        term3 = 1
+        term2 = 0
+        term1 = -1
+        A_naive_inv = get_inv_mat(A_naive, size=num_units)
+        couplings_nmf = self._get_neq_mean_field_couplings(
+            A_naive_inv, dcorrs, ccorrs_inv
+        )
+        couplings_nmf_sq = couplings_nmf**2
+        A_naive_diag = np.diagonal(A_naive)
+        term0_vec = A_naive_diag * np.matmul(couplings_nmf_sq, A_naive_diag)
+
+        min_roots = []
+        for i in range(num_units):
+            Fi_poly = np.polynomial.Polynomial([term0_vec[i], term1, term2, term3])
+            roots = Fi_poly.roots()
+            real_roots = list(filter(lambda r: abs(r.imag) < 1e-5, roots))
+            real_roots = list(map(lambda r: r.real, real_roots))
+            min_root = min(real_roots, key=abs)
+            min_roots.append(min_root)
+        F = np.array(min_roots)
+        return F
+
+    def _get_neq_mean_field_couplings(self, A_inv, dcorrs, ccorrs_inv):
+        couplings_est = np.matmul(np.matmul(A_inv, dcorrs), ccorrs_inv)
+        np.fill_diagonal(couplings_est, 0)
+        return couplings_est
+
+    def _get_nmf_couplings(self, sample):
+        # while the kinetic Ising model does allow for non-zero self-couplings,
+        # we are setting them to zero for the sake of simplicity
+
+        num_units = self.model.getNumUnits()
+        A = self._get_A_naive(sample)
+        A_inv = get_inv_mat(A, size=num_units)
+        dcorrs = sample.get_delayed_corrs()     # to-do
+        ccorrs_inv = self._get_ccorrs_inv(sample)
+
+        couplings_est = self._get_neq_mean_field_couplings(A_inv, dcorrs, ccorrs_inv)
+        return couplings_est
+
+    def _get_TAP_couplings(self, sample):
+        num_units = self.model.getNumUnits()
+        A_naive = self._get_A_naive(sample)
+        dcorrs = sample.get_delayed_corrs()     # to-do
+        ccorrs_inv = self._get_ccorrs_inv(sample)
+
+        F = self._calc_F(A_naive, dcorrs, ccorrs_inv)
+        A = A_naive * (np.ones(num_units) - F)
+        A_inv = get_inv_mat(A, size=num_units)
+
+        couplings_est = self._get_neq_mean_field_couplings(A_inv, dcorrs, ccorrs_inv)
+        return couplings_est
