@@ -30,9 +30,9 @@ int main() {
 
     printParams(true_model, "True model");
 
-    std::cout << '\n';
+    // std::cout << '\n';
 
-    std::cout << "Simulation:\n" << true_sim.getStates() << '\n';
+    // std::cout << "Simulation:\n" << true_sim.getStates() << '\n';
 
     /*
         INFERENCE
@@ -48,9 +48,9 @@ int main() {
 
     // EqModel pl_model {J2, h2};
 
-    int maxSteps {100};
+    int maxSteps {10};
     double lr {0.01};
-    int numBurn {1000};
+    int numBurn {1};
     bool calcLLH {false};
     double alpha {0.1};
     double tol {1e-5};

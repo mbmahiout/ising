@@ -308,8 +308,8 @@ std::pair<Eigen::VectorXd, Eigen::MatrixXd> getGradients(NeqModel& model, Sample
     Eigen::VectorXd dh = dh_terms.rowwise().mean();
 
     Eigen::MatrixXd dJ = Eigen::MatrixXd::Zero(numUnits, numUnits);
-    for (int t = 0; t < numBins; ++t) {
-        dJ.noalias() += dh_terms.col(t+1) * states.col(t).transpose();
+    for (int t = 0; t < numBins-1; ++t) {
+        dJ.noalias() += dh_terms.col(t) * states.col(t).transpose();
     }
     dJ /= numBins;
     dJ.diagonal().setZero();
