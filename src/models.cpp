@@ -128,6 +128,7 @@ double NeqModel::getLLH(Sample& sample) const {
     L(J,h) = (1/M) * sum_{t=1}^{M-1} sum_i [s_i(t+1)*theta_i(t) - ln (2*cosh(theta_i(t)))]
     ref: nguyen et al. 2017
     */
+
     int numBins {sample.getNumBins()};
     int numUnits {getNumUnits()};
 
@@ -138,7 +139,6 @@ double NeqModel::getLLH(Sample& sample) const {
     Eigen::MatrixXd effFields {getEffectiveFields(statesBackwardShifted)};
     Eigen::MatrixXd ln2cosh_effFields {effFields.unaryExpr([](double elem) { return std::log( 2*std::cosh(elem) ); })};
     
-
     Eigen::MatrixXd terms {statesForwardShifted.array() * effFields.array() - ln2cosh_effFields.array()};
     double llh {terms.sum() / (numBins - 1)};
 

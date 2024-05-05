@@ -19,7 +19,7 @@ void printParams(const T& model, std::string_view modelName) {
 int main() {
     // true model
     const int numUnits {3};
-    const int numSims {10};
+    const int numSims {100};
 
     const Eigen::MatrixXd J {Parameters::getGaussianCouplings(numUnits, 0.0, 1.0)};
     const Eigen::VectorXd h {Parameters::getUniformFields(numUnits, -1.3, 1.3)};
@@ -51,7 +51,7 @@ int main() {
     int maxSteps {10};
     double lr {0.01};
     int numBurn {1};
-    bool calcLLH {false};
+    bool calcLLH {true};
     double alpha {0.1};
     double tol {1e-5};
     bool useAdam {false};
@@ -63,7 +63,7 @@ int main() {
     */
 
     //Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam)};  
-    Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam)};  
+    Inverse::gradAscOut ml_out {Inverse::gradientAscent(ml_model, true_sim, maxSteps, lr, useAdam, 0.9, 0.999, 1e-5, 10, 1e-5, 0,0,calcLLH)};  
     std::cout << "ML inference took: " << t.elapsed() << " seconds.\n";
 
     std::cout << '\n';
@@ -73,6 +73,11 @@ int main() {
     std::cout << '\n';
 
     t.reset();
+
+    std::cout << "LLH:\n" << '\n';
+    for (auto LLH : ml_out.stats.LLHs) {
+        std::cout << LLH << '\n';
+    }
 
     /*
         PL INFERENCE
