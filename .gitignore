@@ -1,3 +1,6 @@
+# project specific
+thesis.pdf
+
 # General
 .DS_Store        # macOS folder attributes
 ._*
