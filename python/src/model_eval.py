@@ -36,7 +36,7 @@ class IsingEval:
         self.save_button_metadata.on_click(self.save_metadata)
         self.save_button_results = widgets.Button(description="Save results")
         self.save_button_results.on_click(self.save_results)
-        self.color_palette = ["blue", "green", "red", "magenta", "purple", "orange", "brown", "cyan"]
+        self.color_palette = ["blue", "green", "red", "orange", "purple", "cyan", "brown", "magenta"]
 
     ################
     # core methods #
