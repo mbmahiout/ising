@@ -61,7 +61,6 @@ public:
     double getHamiltonian(const Eigen::VectorXi& state) const;
     double getPartitionFunc() const;
     double getLLH(Sample& sample) const;
-
 };
 
 class NeqModel: public IsingModel {
@@ -76,7 +75,6 @@ public:
 
     // functions for likelihood calculation
     double getLLH(Sample& sample) const;
-
 };
 
 #endif //MODELS_H

@@ -124,5 +124,23 @@ void NeqModel::updateState() {
 }
 
 double NeqModel::getLLH(Sample& sample) const {
-    return 0;    
+    /*
+    L(J,h) = (1/M) * sum_{t=1}^{M-1} sum_i [s_i(t+1)*theta_i(t) - ln (2*cosh(theta_i(t)))]
+    ref: nguyen et al. 2017
+    */
+    int numBins {sample.getNumBins()};
+    int numUnits {getNumUnits()};
+
+    Eigen::MatrixXd states {sample.getStates().cast<double>()};
+    Eigen::MatrixXd statesForwardShifted {states(Eigen::all, Eigen::seq(1, Eigen::last))};
+    Eigen::MatrixXd statesBackwardShifted {states(Eigen::all, Eigen::seq(0, Eigen::last-1))};
+
+    Eigen::MatrixXd effFields {getEffectiveFields(statesBackwardShifted)};
+    Eigen::MatrixXd ln2cosh_effFields {effFields.unaryExpr([](double elem) { return std::log( 2*std::cosh(elem) ); })};
+    
+
+    Eigen::MatrixXd terms {statesForwardShifted.array() * effFields.array() - ln2cosh_effFields.array()};
+    double llh {terms.sum() / (numBins - 1)};
+
+    return llh;
 }
