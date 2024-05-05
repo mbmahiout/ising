@@ -209,10 +209,11 @@ class EqFitter(IsingFitter):
 
 
 class NeqFitter(IsingFitter):
-    def __init__(self, model):
+    def __init__(self, model, dt=1):
         if not isinstance(model, ising.NeqModel):
             raise ValueError("Model must be a non-equilibrium Ising model (NeqModel).")
         super().__init__(model)
+        self.dt = dt
 
     def maximize_likelihood(
             self,
@@ -282,7 +283,7 @@ class NeqFitter(IsingFitter):
         num_units = self.model.getNumUnits()
         A = self._get_A_naive(sample)
         A_inv = get_inv_mat(A, size=num_units)
-        dcorrs = sample.get_delayed_corrs()     # to-do
+        dcorrs = sample.getDelayedCorrs(self.dt)
         ccorrs_inv = self._get_ccorrs_inv(sample)
 
         couplings_est = self._get_neq_mean_field_couplings(A_inv, dcorrs, ccorrs_inv)
@@ -291,7 +292,7 @@ class NeqFitter(IsingFitter):
     def _get_TAP_couplings(self, sample):
         num_units = self.model.getNumUnits()
         A_naive = self._get_A_naive(sample)
-        dcorrs = sample.get_delayed_corrs()     # to-do
+        dcorrs = sample.getDelayedCorrs(self.dt)
         ccorrs_inv = self._get_ccorrs_inv(sample)
 
         F = self._calc_F(A_naive, dcorrs, ccorrs_inv)
