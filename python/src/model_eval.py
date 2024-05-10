@@ -143,7 +143,7 @@ class IsingEval:
     # auxiliary methods #
     #####################
 
-    ### plotting ###
+    # --- plotting --- #
 
     def plot_scatter(self, ftr_name, row, col, pad=0.5):
 
@@ -256,7 +256,7 @@ class IsingEval:
             col=col,
         )
 
-    # calculations #
+    # --- calculations --- #
 
     def get_results(self):
         results = {
@@ -323,7 +323,7 @@ class IsingEval:
                 test_results[label] = {"stat": round(stat, 3), "pval": round(pval, 3)}
         return test_results
 
-    ### misc ###
+    # --- misc --- #
 
     @staticmethod
     def get_ftr(model, sample, ftr_name):

@@ -1,8 +1,10 @@
+from src.isingfitter import IsingFitter
+
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+from IPython.display import display
 import ipywidgets as widgets
 
 
@@ -138,3 +140,43 @@ def plot_generalized(layout_spec, path=None):
         button = widgets.Button(description="Save Figure")
         button.on_click(save_figure)
         display(button)
+
+
+def convergence_plot(fitter: IsingFitter, plot_llh: bool = False):
+    layout_spec = {
+        (1, 1): {
+            "data": fitter.fields_grads,
+            "label": r"$\Large \nabla h$",
+            "step_label": "",
+        },
+        (2, 1): {
+            "data": fitter.couplings_grads,
+            "label": r"$\Large \nabla J$",
+            "step_label": "Step",
+        },
+        (1, 2): {
+            "data": fitter.fields_history,
+            "label": r"$\Large h$",
+            "step_label": "",
+        },
+        (2, 2): {
+            "data": fitter.couplings_history,
+            "label": r"$\Large J$",
+            "step_label": "Step",
+        },
+        (1, 3): {
+            "data": fitter.sd_fields,
+            "label": r"$\Large \sigma_h$",
+            "step_label": "",
+        },
+        (2, 3): {
+            "data": fitter.sd_couplings,
+            "label": r"$\Large \sigma_J$",
+            "step_label": "Step",
+        },
+    }
+
+    if plot_llh:
+        layout_spec[(3, 2)] = {"data": fitter.llhs, "label": r"$LLHs$"}
+
+    plot_generalized(layout_spec)

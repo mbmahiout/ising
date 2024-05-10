@@ -73,3 +73,49 @@ def get_analysis_path(analysis_name, num_units, bin_width):
 def int_linspace(min_int: int, max_int: int, num_ints: int = 100):
     linspace_floats = np.linspace(min_int, max_int, num_ints)
     return np.round(linspace_floats).astype(int)
+
+
+def get_metadata(
+    num_units, is_empirical_analysis, eq_inv_methods=[], neq_inv_methods=[], **kwargs
+):
+    metadata = {}
+    metadata["num_units"] = num_units
+
+    if is_empirical_analysis:
+        bin_width = kwargs["bin_width"]
+        num_bins = kwargs["num_bins"]
+        metadata["bin_width"] = bin_width
+        metadata["num_bins"] = num_bins
+    else:
+        num_sims = kwargs["num_sims"]
+        num_burn = kwargs.get("num_burn", 1000)
+        true_fields = kwargs["true_fields"]
+        true_couplings = kwargs["true_couplings"]
+        metadata["true_model"] = {
+            "true_fields": true_fields,
+            "true_couplings": true_couplings,
+            "num_sims": num_sims,
+            "num_burn": num_burn,
+        }
+
+    if (eq_inv_methods != []) or (neq_inv_methods != []):
+        metadata["inverse_methods"] = {
+            "EQ": eq_inv_methods,
+            "NEQ": neq_inv_methods,
+        }
+        if ("ML" in eq_inv_methods) or ("ML" in neq_inv_methods):
+            # each can be dict if multiple ML models with different hyperparams
+            num_steps = kwargs["num_steps"]
+            learning_rate = kwargs["learning_rate"]
+            is_converged = kwargs["is_converged"]
+            metadata["maximum_likelihood"] = {
+                "num_steps": num_steps,
+                "learning_rate": learning_rate,
+                "is_converged": is_converged,
+            }
+        if "ML" in eq_inv_methods:
+            num_sims_ml = kwargs["num_sims_ml"]
+            num_burn_ml = kwargs.get("num_burn_ml", 1000)
+            metadata["maximum_likelihood"]["num_sims"] = num_sims_ml
+            metadata["maximum_likelihood"]["num_burn"] = num_burn_ml
+    return metadata
