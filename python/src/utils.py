@@ -64,7 +64,12 @@ def get_inv_mat(mat, size):
 
 
 def get_analysis_path(analysis_name, num_units, bin_width):
-    analysis_path = './analyses/'
-    dir_name = f'n{num_units}b{bin_width}{analysis_name}'
-    analysis_path += f'./{dir_name}/'
+    analysis_path = "./analyses/"
+    dir_name = f"n{num_units}b{bin_width}{analysis_name}"
+    analysis_path += f"./{dir_name}/"
     return analysis_path
+
+
+def int_linspace(min_int: int, max_int: int, num_ints: int = 100):
+    linspace_floats = np.linspace(min_int, max_int, num_ints)
+    return np.round(linspace_floats).astype(int)

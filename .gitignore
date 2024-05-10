@@ -3,7 +3,7 @@ thesis.pdf
 principles_of_neural_coding.pdf
 
 # General
-.DS_Store        # macOS folder attributes
+.DS_Store
 ._*
 .Spotlight-V100  # Spotlight metadata
 .Trashes         # Files thrown into trash
@@ -197,3 +197,4 @@ Makefile
 # CMake build artifacts
 cmake-build-debug/
 cmake-build-release/
+
