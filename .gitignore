@@ -1,6 +1,7 @@
 # project specific
 thesis.pdf
-principles_of_neural_coding.pdf
+papers/
+data/
 
 # General
 .DS_Store

@@ -8,9 +8,9 @@ class Timer
 private:
 	// Type aliases to make accessing nested type easier
 	using Clock = std::chrono::steady_clock;
-	using Second = std::chrono::duration<double, std::ratio<1> >;
+	using Second = std::chrono::duration<double, std::ratio<1>>;
 
-	std::chrono::time_point<Clock> m_beg { Clock::now() };
+	std::chrono::time_point<Clock> m_beg{Clock::now()};
 
 public:
 	void reset()
@@ -24,4 +24,4 @@ public:
 	}
 };
 
-#endif //TIMER_H
+#endif // TIMER_H

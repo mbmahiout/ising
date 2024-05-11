@@ -1,10 +1,14 @@
 import sys
-path2cpp_pkg = "/Users/mariusmahiout/Documents/repos/ising_core/build" # change to relative import
+
+path2cpp_pkg = (
+    "/Users/mariusmahiout/Documents/repos/ising_core/build"  # change to relative import
+)
 sys.path.append(path2cpp_pkg)
 import ising
 
 from src.utils import stable_arctanh, get_inv_mat
 import numpy as np
+
 
 class IsingFitter:
     def __init__(self, model):
@@ -143,19 +147,19 @@ class EqFitter(IsingFitter):
         super().__init__(model)
 
     def maximize_likelihood(
-            self,
-            sample,
-            max_steps,
-            learning_rate=0.1,
-            use_adam=True,
-            beta1=0.9,
-            beta2=0.999,
-            epsilon=1e-5,
-            win_size=10,
-            tolerance=1e-5,
-            num_sims=0,
-            num_burn=0,
-            calc_llh=False
+        self,
+        sample,
+        max_steps,
+        learning_rate=0.1,
+        use_adam=True,
+        beta1=0.9,
+        beta2=0.999,
+        epsilon=1e-5,
+        win_size=10,
+        tolerance=1e-5,
+        num_sims=0,
+        num_burn=0,
+        calc_llh=False,
     ):
         out = ising.gradientAscentEQ(
             self.model,
@@ -170,7 +174,7 @@ class EqFitter(IsingFitter):
             tolerance,
             num_sims,
             num_burn,
-            calc_llh
+            calc_llh,
         )
         self.set_gradient_ascent_outputs(out, calc_llh)
 
@@ -216,19 +220,19 @@ class NeqFitter(IsingFitter):
         self.dt = dt
 
     def maximize_likelihood(
-            self,
-            sample,
-            max_steps,
-            learning_rate=0.1,
-            use_adam=True,
-            beta1=0.9,
-            beta2=0.999,
-            epsilon=1e-5,
-            win_size=10,
-            tolerance=1e-5,
-            num_sims=0,
-            num_burn=0,
-            calc_llh=False
+        self,
+        sample,
+        max_steps,
+        learning_rate=0.1,
+        use_adam=True,
+        beta1=0.9,
+        beta2=0.999,
+        epsilon=1e-5,
+        win_size=10,
+        tolerance=1e-5,
+        num_sims=0,
+        num_burn=0,
+        calc_llh=False,
     ):
         out = ising.gradientAscentNEQ(
             self.model,
@@ -243,7 +247,7 @@ class NeqFitter(IsingFitter):
             tolerance,
             num_sims,
             num_burn,
-            calc_llh
+            calc_llh,
         )
         self.set_gradient_ascent_outputs(out, calc_llh)
 

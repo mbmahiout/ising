@@ -2,12 +2,13 @@
 #include "models.h"
 #include "grad_ascent.h"
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h> 
+#include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(ising, m) {
+PYBIND11_MODULE(ising, m)
+{
     // sample
     py::class_<Sample>(m, "Sample")
         // constructor
@@ -27,36 +28,36 @@ PYBIND11_MODULE(ising, m) {
 
     // models
     py::class_<EqModel, std::shared_ptr<EqModel>>(m, "EqModel")
-            // constructor
-            .def(py::init<Eigen::MatrixXd, Eigen::VectorXd>())
-            
-            // setters
-            .def("setFields", &EqModel::setFields)
-            .def("setCouplings", &EqModel::setCouplings)
+        // constructor
+        .def(py::init<Eigen::MatrixXd, Eigen::VectorXd>())
 
-            // getters
-            .def("getNumUnits", &EqModel::getNumUnits)
-            .def("getFields", &EqModel::getFields)
-            .def("getCouplings", &EqModel::getCouplings)
-            
-            // simulation
-            .def("simulate", &EqModel::simulate);
+        // setters
+        .def("setFields", &EqModel::setFields)
+        .def("setCouplings", &EqModel::setCouplings)
+
+        // getters
+        .def("getNumUnits", &EqModel::getNumUnits)
+        .def("getFields", &EqModel::getFields)
+        .def("getCouplings", &EqModel::getCouplings)
+
+        // simulation
+        .def("simulate", &EqModel::simulate);
 
     py::class_<NeqModel, std::shared_ptr<NeqModel>>(m, "NeqModel")
-            // constructor
-            .def(py::init<Eigen::MatrixXd, Eigen::VectorXd>())
-            
-            // setters
-            .def("setFields", &NeqModel::setFields)
-            .def("setCouplings", &NeqModel::setCouplings)
+        // constructor
+        .def(py::init<Eigen::MatrixXd, Eigen::VectorXd>())
 
-            // getters
-            .def("getNumUnits", &NeqModel::getNumUnits)
-            .def("getFields", &NeqModel::getFields)
-            .def("getCouplings", &NeqModel::getCouplings)
-            
-            // simulation
-            .def("simulate", &NeqModel::simulate);
+        // setters
+        .def("setFields", &NeqModel::setFields)
+        .def("setCouplings", &NeqModel::setCouplings)
+
+        // getters
+        .def("getNumUnits", &NeqModel::getNumUnits)
+        .def("getFields", &NeqModel::getFields)
+        .def("getCouplings", &NeqModel::getCouplings)
+
+        // simulation
+        .def("simulate", &NeqModel::simulate);
 
     // gradient ascent
     py::class_<Inverse::paramsHistory>(m, "paramsHistory")
@@ -91,37 +92,37 @@ PYBIND11_MODULE(ising, m) {
         .def_readwrite("grads", &Inverse::gradAscOut::grads)
         .def_readwrite("stats", &Inverse::gradAscOut::stats);
 
-    m.def("gradientAscentEQ", 
+    m.def("gradientAscentEQ",
           &Inverse::gradientAscent<EqModel>,
           "Gradient ascent for EQ LLH/PL maximization",
-          py::arg("model"), 
-          py::arg("sample"), 
-          py::arg("maxSteps"), 
+          py::arg("model"),
+          py::arg("sample"),
+          py::arg("maxSteps"),
           py::arg("learningRate") = 0.1,
           py::arg("useAdam") = false,
           py::arg("beta1") = 0.9,
           py::arg("beta2") = 0.999,
           py::arg("epsilon") = 0.1,
           py::arg("winSize") = 10,
-          py::arg("tolerance") = 1e-5, 
-          py::arg("numSims") = 0, 
-          py::arg("numBurn") = 0, 
+          py::arg("tolerance") = 1e-5,
+          py::arg("numSims") = 0,
+          py::arg("numBurn") = 0,
           py::arg("calcLLH") = false);
 
     m.def("gradientAscentNEQ",
           &Inverse::gradientAscent<NeqModel>,
           "Gradient ascent for NEQ LLH maximization",
-          py::arg("model"), 
-          py::arg("sample"), 
-          py::arg("maxSteps"), 
+          py::arg("model"),
+          py::arg("sample"),
+          py::arg("maxSteps"),
           py::arg("learningRate") = 0.1,
           py::arg("useAdam") = false,
           py::arg("beta1") = 0.9,
           py::arg("beta2") = 0.999,
           py::arg("epsilon") = 0.1,
           py::arg("winSize") = 10,
-          py::arg("tolerance") = 1e-5, 
-          py::arg("numSims") = 0, 
-          py::arg("numBurn") = 0, 
+          py::arg("tolerance") = 1e-5,
+          py::arg("numSims") = 0,
+          py::arg("numBurn") = 0,
           py::arg("calcLLH") = false);
 }
