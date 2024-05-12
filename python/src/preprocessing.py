@@ -36,7 +36,7 @@ def get_recording_sample(
     if num_units is not None:
         states = subset_units(states, num_units)
 
-    states = binary_to_ising(states)
+    states = binary2ising(states)
     return ising.Sample(states)
 
 
@@ -99,11 +99,11 @@ def reduce_time_resolution(states, bin_width, bin_width_orig=50):
         raise ValueError(f"bin_width must be >= {bin_width_orig} ms")
 
 
-def binary_to_ising(states):
+def binary2ising(states):
     return 2 * states - 1
 
 
-def ising_to_binary(states):
+def ising2binary(states):
     return 0.5 * (states + 1)
 
 
