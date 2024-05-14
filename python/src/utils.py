@@ -1,22 +1,18 @@
 import numpy as np
 
 
-def get_exp_terms(h: np.ndarray, J: np.ndarray, i: int, j: int):
-    term1 = np.exp(h[i] + h[j] + J[i, j])
-    term2 = np.exp(h[i] - h[j] - J[i, j])
-    term3 = np.exp(-h[i] + h[j] - J[i, j])
-    term4 = np.exp(-h[i] - h[j] + J[i, j])
-    return term1, term2, term3, term4
+def get_all_recording_means(all_samples: list) -> list:
+    return [
+        [sample.getMeans() for sample in all_samples[i]]
+        for i in range(len(all_samples))
+    ]
 
 
-def get_analytic_corrs(h: np.ndarray, J: np.ndarray) -> np.ndarray:
-    num_units = h.shape[0]
-    chi = np.ones((num_units, num_units))
-    for i in range(num_units):
-        for j in [k for k in range(num_units) if k != i]:
-            trm1, trm2, trm3, trm4 = get_exp_terms(h, J, i, j)
-            chi[i, j] = (trm1 - trm2 - trm3 + trm4) / (trm1 + trm2 + trm3 + trm4)
-    return chi
+def get_all_recording_pcorrs(all_samples: list) -> list:
+    return [
+        [sample.getPairwiseCorrs().flatten() for sample in all_samples[i]]
+        for i in range(len(all_samples))
+    ]
 
 
 def get_rmse(true, predicted):

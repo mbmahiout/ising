@@ -1,4 +1,5 @@
 from src.isingfitter import IsingFitter
+import src.utils as utils
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,40 +9,15 @@ from IPython.display import display
 import ipywidgets as widgets
 
 
-def scatter_compare_2d_obs(gt: np.ndarray, est: np.ndarray):
-    num_units = gt.shape[0]
-    gt2plt = []
-    est2plt = []
-    for i in range(num_units):
-        for j in [k for k in range(num_units) if k != i]:
-            gt2plt.append(gt[i, j])
-            est2plt.append(est[i, j])
+def get_hex_colors(num_colors, cmap_name="viridis"):
+    cmap = plt.get_cmap(cmap_name)
+    colors = cmap(np.linspace(0, 1, num_colors + 1))
 
-    max_val = max(max(gt2plt), max(est2plt))
-    min_val = min(min(gt2plt), min(est2plt))
-    interval = np.linspace(min_val * 2, max_val * 2, 100)
-
-    plt.scatter(gt2plt, est2plt, color="dodgerblue", alpha=0.75)
-    plt.plot(interval, interval, linestyle="--", color="black")
-
-    plt.xlim([min_val * 1.2, max_val * 1.2])
-    plt.ylim([min_val * 1.2, max_val * 1.2])
-    plt.show()
-    plt.close()
-
-
-def scatter_compare_1d_obs(gt: np.ndarray, est: np.ndarray):
-    max_val = max(max(gt), max(est))
-    min_val = min(min(gt), min(est))
-    interval = np.linspace(min_val * 2, max_val * 2, 100)
-
-    plt.scatter(gt, est, color="dodgerblue", alpha=0.75)
-    plt.plot(interval, interval, linestyle="--", color="black")
-
-    plt.xlim([min_val * 1.2, max_val * 1.2])
-    plt.ylim([min_val * 1.2, max_val * 1.2])
-    plt.show()
-    plt.close()
+    hex_colors = [
+        "#%02x%02x%02x" % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+        for rgb in colors[1:]
+    ]
+    return hex_colors
 
 
 def plot_generalized(layout_spec, path=None):
@@ -180,3 +156,127 @@ def convergence_plot(fitter: IsingFitter, plot_llh: bool = False):
         layout_spec[(3, 2)] = {"data": fitter.llhs, "label": r"$LLHs$"}
 
     plot_generalized(layout_spec)
+
+
+def plot_histogram(
+    fig: go.FigureWidget,
+    labels: list,
+    colors: list,
+    obs_datas: list,
+    row: int,
+    col: int,
+    num_bins: int,
+):
+
+    all_data = np.concatenate(obs_datas)
+    min_val, max_val = np.min(all_data), np.max(all_data)
+    bin_width = (max_val - min_val) / num_bins
+    bin_edges = np.arange(min_val, max_val + bin_width, bin_width)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    showlegend = row == 1 and col == 1
+    for obs_data, label, color in zip(obs_datas, labels, colors):
+        counts, _ = np.histogram(obs_data, bins=bin_edges, density=True)
+
+        adjusted_counts = counts * bin_width
+        fig.add_trace(
+            go.Bar(
+                x=bin_centers,
+                y=adjusted_counts,
+                width=bin_width,
+                marker=dict(color=color, opacity=0.75),
+                name=label,
+                legendgroup=label,
+                showlegend=showlegend,
+            ),
+            row=row,
+            col=col,
+        )
+
+
+def plot_mean_histograms(fig, labels, colors, means, num_bins):
+    for i in range(len(means)):
+        plot_histogram(
+            fig, labels, colors, means[0], row=1, col=i + 1, num_bins=num_bins
+        )
+
+
+def plot_pcorr_histograms(fig, labels, colors, pcorrs, num_bins):
+    for i in range(len(pcorrs)):
+        plot_histogram(
+            fig, labels, colors, pcorrs[0], row=2, col=i + 1, num_bins=num_bins
+        )
+
+
+def add_annotations(fig):
+    fig.add_annotation(
+        text=r"$$\Large\text{Pair-wise covariance, } \langle \sigma_i \sigma_j \rangle$$",
+        xref="paper",  # 'paper' refers to the entire figure from 0 to 1
+        yref="paper",
+        x=0.5,
+        y=-0.1,
+        showarrow=False,
+        font=dict(
+            size=22,
+        ),
+        align="center",
+    )
+
+    fig.add_annotation(
+        text=r"$$\Large\text{Mean, } \langle \sigma_i \rangle$$",
+        xref="paper",  # 'paper' refers to the entire figure from 0 to 1
+        yref="paper",
+        x=0.5,
+        y=0.5,
+        showarrow=False,
+        font=dict(size=22),
+        align="center",
+    )
+
+    # vertical subtitle on the left
+    fig.add_annotation(
+        text=r"$$\Large\text{Relative frequency}$$",
+        xref="paper",
+        yref="paper",
+        x=-0.075,
+        y=0.5,
+        showarrow=False,
+        font=dict(size=22),
+        textangle=-90,  # rotated 90 degrees
+    )
+
+
+def plot_empirical_histograms(
+    all_samples, labels, num_cols=4, num_rows=2, num_bins=30, path=None
+):
+    def save_figure(b):
+        fig.write_image(path)
+        print(f"Saved to {path}")
+
+    colors = get_hex_colors(len(all_samples[0]), "winter")
+
+    means = utils.get_all_recording_means(all_samples)
+    pcorrs = utils.get_all_recording_pcorrs(all_samples)
+
+    fig = go.FigureWidget(
+        make_subplots(
+            rows=num_rows,
+            cols=num_cols,
+        )
+    )
+
+    plot_mean_histograms(fig, labels, colors, means, num_bins)
+    plot_pcorr_histograms(fig, labels, colors, pcorrs, num_bins)
+
+    add_annotations(fig)
+
+    fig.update_layout(
+        height=400 * num_rows, width=400 * num_cols, margin=dict(l=100, t=40, b=70)
+    )
+
+    display(fig)
+
+    if path is not None:  # to-do: also check if is notebook
+        button = widgets.Button(description="Save Figure")
+        button.on_click(save_figure)
+        display(button)
