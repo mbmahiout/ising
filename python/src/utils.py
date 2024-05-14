@@ -1,6 +1,37 @@
 import numpy as np
 
 
+def get_nonoverlapping_subsamples(states, num_subsamples):
+    num_units = states.shape[1]
+    num_units_subsample = num_units // num_subsamples
+
+    subsamples = []
+    start_idx = 0
+
+    for _ in range(num_subsamples):
+        end_idx = start_idx + num_units_subsample
+        subsamples.append(states[:, start_idx:end_idx])
+        start_idx = end_idx
+
+    return subsamples
+
+
+def get_partitioned_sample(
+    fname,
+    mouse_name,
+    bin_width=50,
+    num_subsamples=1,
+    data_dir="data",
+):
+    mat_dict = pre.load_recordings(fname, mouse_name, data_dir)
+    states = pre.get_recording_states(mat_dict)
+    states = pre.reduce_time_resolution(states, bin_width)
+    subsamples = get_nonoverlapping_subsamples(states, num_subsamples)
+    subsamples = [binary2ising(s) for s in subsamples]
+    subsamples = [ising.Sample(s) for s in subsamples]
+    return subsamples  # list(map(lambda s: ising.Sample(binary2ising(s)), subsamples))
+
+
 def get_all_recording_means(all_samples: list) -> list:
     return [
         [sample.getMeans() for sample in all_samples[i]]

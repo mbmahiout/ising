@@ -40,6 +40,22 @@ def get_recording_sample(
     return ising.Sample(states)
 
 
+def get_partitioned_sample(
+    fname,
+    mouse_name,
+    bin_width=50,
+    num_subsamples=1,
+    data_dir="data",
+):
+    mat_dict = load_recordings(fname, mouse_name, data_dir)
+    states = get_recording_states(mat_dict)
+    states = reduce_time_resolution(states, bin_width)
+    subsamples = get_nonoverlapping_subsamples(states, num_subsamples)
+    subsamples = [binary2ising(s) for s in subsamples]
+    subsamples = [ising.Sample(s) for s in subsamples]
+    return subsamples  # list(map(lambda s: ising.Sample(binary2ising(s)), subsamples))
+
+
 #############
 # auxiliary #
 #############
@@ -59,24 +75,19 @@ def get_recording_states(mat_dict):
     return np.array(states).T
 
 
-# def reduce_time_resolution(states, bin_width, bin_width_orig=50):  # bin_width in ms
-#     if bin_width == bin_width_orig:
-#         return states
-#     elif bin_width > bin_width_orig:
-#         num_bins_orig = states.shape[0]
-#         bin_width_ratio = bin_width_orig / bin_width
-#         num_bins = int(np.floor(num_bins_orig * bin_width_ratio))
+def get_nonoverlapping_subsamples(states, num_subsamples):
+    num_units = states.shape[1]
+    num_units_subsample = num_units // num_subsamples
 
-#         num_units = states.shape[1]
-#         lo_res_states = np.zeros((num_bins, num_units))
-#         for bin in range(num_bins):
-#             lo_res_states[bin, :] += sum(
-#                 states[bin * bin_width : (bin + 1) * bin_width]
-#             )
-#         lo_res_states = np.heaviside(lo_res_states, 0)
-#         return lo_res_states
-#     else:
-#         raise ValueError("bin_width must be < {bin_width_orig} ms")
+    subsamples = []
+    start_idx = 0
+
+    for _ in range(num_subsamples):
+        end_idx = start_idx + num_units_subsample
+        subsamples.append(states[:, start_idx:end_idx])
+        start_idx = end_idx
+
+    return subsamples
 
 
 def reduce_time_resolution(states, bin_width, bin_width_orig=50):
