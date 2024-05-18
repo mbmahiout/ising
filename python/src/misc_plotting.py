@@ -118,6 +118,9 @@ def plot_generalized(layout_spec, path=None):
         display(button)
 
 
+###########################################################################################################
+
+
 def convergence_plot(fitter: IsingFitter, plot_llh: bool = False):
     layout_spec = {
         (1, 1): {
@@ -156,6 +159,9 @@ def convergence_plot(fitter: IsingFitter, plot_llh: bool = False):
         layout_spec[(3, 2)] = {"data": fitter.llhs, "label": r"$LLHs$"}
 
     plot_generalized(layout_spec)
+
+
+###########################################################################################################
 
 
 def plot_histogram(
@@ -208,7 +214,7 @@ def plot_pcorr_histograms(fig, labels, colors, pcorrs, num_bins):
         )
 
 
-def add_annotations(fig):
+def add_hist_annotations(fig):
     fig.add_annotation(
         text=r"$$\Large\text{Pair-wise covariance, } \langle \sigma_i \sigma_j \rangle$$",
         xref="paper",  # 'paper' refers to the entire figure from 0 to 1
@@ -268,7 +274,7 @@ def plot_empirical_histograms(
     plot_mean_histograms(fig, labels, colors, means, num_bins)
     plot_pcorr_histograms(fig, labels, colors, pcorrs, num_bins)
 
-    add_annotations(fig)
+    add_hist_annotations(fig)
 
     fig.update_layout(
         height=400 * num_rows, width=400 * num_cols, margin=dict(l=100, t=40, b=70)
@@ -277,6 +283,147 @@ def plot_empirical_histograms(
     display(fig)
 
     if path is not None:  # to-do: also check if is notebook
+        button = widgets.Button(description="Save Figure")
+        button.on_click(save_figure)
+        display(button)
+
+
+###########################################################################################################
+
+
+def add_scatter_annotations(fig):
+    fig.update_yaxes(
+        title_text=r"$$\Large \langle \sigma_i \rangle ^ {\text{Simulated}}$$",
+        row=1,
+        col=1,
+    )
+    fig.update_yaxes(
+        title_text=r"$$\Large \langle \sigma_i \sigma_j \rangle ^ {\text{Simulated}}$$",
+        row=2,
+        col=1,
+    )
+
+    fig.add_annotation(
+        text=r"$$\Large \langle \sigma_i \sigma_j \rangle ^ {\text{Analytic}}$$",
+        xref="paper",  # 'paper' refers to the entire figure from 0 to 1
+        yref="paper",
+        x=0.5,
+        y=-0.1,
+        showarrow=False,
+        font=dict(
+            size=22,
+        ),
+        align="center",
+    )
+
+    fig.add_annotation(
+        text=r"$$\Large \langle \sigma_i \rangle ^ {\text{Analytic}}$$",
+        xref="paper",  # 'paper' refers to the entire figure from 0 to 1
+        yref="paper",
+        x=0.5,
+        y=0.5,
+        showarrow=False,
+        font=dict(size=22),
+        align="center",
+    )
+
+
+def _add_id_line(fig, interval, row, col):
+    fig.add_trace(
+        go.Scatter(
+            x=interval,
+            y=interval,
+            mode="lines",
+            line=dict(color="black", dash="dash"),
+            showlegend=False,
+        ),
+        row=row,
+        col=col,
+    )
+
+
+def get_padded_interval(min_val, max_val, pad):
+    interval = [
+        min_val - (max_val - min_val) * pad,
+        max_val + (max_val - min_val) * pad,
+    ]
+    return interval
+
+
+def _add_comparison_scatter(fig, x_data, y_data, color, row, col):
+    fig.add_trace(
+        go.Scatter(
+            x=x_data,
+            y=y_data,
+            mode="markers",
+            marker=dict(color=color, size=7.5, symbol="circle"),
+            opacity=0.75,
+            showlegend=False,
+        ),
+        row=row,
+        col=col,
+    )
+
+
+def plot_scatter_comparison(fig, color, obs_sim, obs_anal, row, col, pad=0.5):
+
+    _add_comparison_scatter(fig, obs_anal, obs_sim, color, row, col)
+
+    min_val, max_val = np.min(obs_anal), np.max(obs_anal)
+    interval = get_padded_interval(min_val, max_val, pad)
+    _add_id_line(fig, interval, row, col)
+
+
+def plot_analytic_simulated_scatter_comparisons(
+    all_obs_anal: list, all_obs_sim: list, color: str, path=None
+):
+    def save_figure(b):
+        fig.write_image(path)
+        print(f"Saved to {path}")
+
+    num_rows = 2
+    num_cols = len(all_obs_anal)
+
+    fig = go.FigureWidget(
+        make_subplots(
+            rows=num_rows,
+            cols=num_cols,
+        )
+    )
+
+    for obs_anal, obs_sim, col in zip(
+        all_obs_anal, all_obs_sim, range(1, num_cols + 1)
+    ):
+        plot_scatter_comparison(fig, color, obs_sim["m"], obs_anal["m"], row=1, col=col)
+        plot_scatter_comparison(
+            fig,
+            color,
+            obs_sim["chi"].flatten(),
+            obs_anal["chi"].flatten(),
+            row=2,
+            col=col,
+        )
+
+    fig.update_layout(
+        height=400 * num_rows, width=400 * num_cols, margin=dict(l=100, t=40, b=70)
+    )
+
+    fig.update_yaxes(
+        title_text=r"$$\Large \langle \sigma_i \rangle ^ {\text{Simulated}}$$",
+        row=1,
+        col=1,
+    )
+    fig.update_yaxes(
+        title_text=r"$$\Large \langle \sigma_i \sigma_j \rangle ^ {\text{Simulated}}$$",
+        row=2,
+        col=1,
+    )
+
+    add_scatter_annotations(fig)
+
+    display(fig)
+
+    if path is not None:
         button = widgets.Button(description="Save Figure")
         button.on_click(save_figure)
         display(button)
