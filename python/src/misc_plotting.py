@@ -121,7 +121,7 @@ def plot_generalized(layout_spec, path=None):
 ###########################################################################################################
 
 
-def convergence_plot(fitter: IsingFitter, plot_llh: bool = False):
+def convergence_plot(fitter: IsingFitter, plot_llh: bool = False, path=None):
     layout_spec = {
         (1, 1): {
             "data": fitter.fields_grads,
@@ -158,7 +158,7 @@ def convergence_plot(fitter: IsingFitter, plot_llh: bool = False):
     if plot_llh:
         layout_spec[(3, 2)] = {"data": fitter.llhs, "label": r"$LLHs$"}
 
-    plot_generalized(layout_spec)
+    plot_generalized(layout_spec, path)
 
 
 ###########################################################################################################
@@ -203,14 +203,14 @@ def plot_histogram(
 def plot_mean_histograms(fig, labels, colors, means, num_bins):
     for i in range(len(means)):
         plot_histogram(
-            fig, labels, colors, means[0], row=1, col=i + 1, num_bins=num_bins
+            fig, labels, colors, means[i], row=1, col=i + 1, num_bins=num_bins
         )
 
 
 def plot_pcorr_histograms(fig, labels, colors, pcorrs, num_bins):
     for i in range(len(pcorrs)):
         plot_histogram(
-            fig, labels, colors, pcorrs[0], row=2, col=i + 1, num_bins=num_bins
+            fig, labels, colors, pcorrs[i], row=2, col=i + 1, num_bins=num_bins
         )
 
 

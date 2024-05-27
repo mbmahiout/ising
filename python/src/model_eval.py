@@ -165,8 +165,19 @@ class IsingEval:
 
         IsingEval._add_id_line(self.fig, interval, row, col)
 
-        self.fig.update_xaxes(title_text="True", row=row, col=col)
-        self.fig.update_yaxes(title_text="Estimated", row=row, col=col)
+        # self.fig.update_xaxes(
+        #     title_text="True", row=row, col=col
+        # )
+        # self.fig.update_yaxes(
+        #     title_text="Estimated", row=row, col=col
+        # )
+
+        self.fig.update_xaxes(
+            title_text=r"${ftr_symbol}_{\text{True}}$", row=row, col=col
+        )
+        self.fig.update_yaxes(
+            title_text=r"${ftr_symbol}_{\text{Est}}$", row=row, col=col
+        )
 
     def plot_histogram(self, ftr_name, row, col):
         num_bins = 20
@@ -203,7 +214,9 @@ class IsingEval:
         )
 
         self.fig.update_yaxes(range=[0, 1], row=row, col=col)
-        self.fig.update_xaxes(title_text="Values", row=row, col=col)
+        self.fig.update_xaxes(
+            title_text="Values", row=row, col=col
+        )  # TO-DO: title_text=rf"${ftr_sumbol}$"
         self.fig.update_yaxes(title_text="Rel. Freq.", row=row, col=col)
 
     @staticmethod
@@ -364,7 +377,7 @@ class IsingEval:
         ]
         return interval
 
-    @staticmethod
+    @staticmethod  # move to utils
     def _make_dir(dir_path):
         try:
             if not os.path.exists(dir_path):

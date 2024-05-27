@@ -1,4 +1,8 @@
 import numpy as np
+from scipy.stats import ks_2samp
+import pandas as pd
+import os
+from IPython.display import display
 
 
 def get_all_recording_means(all_samples: list) -> list:
@@ -115,3 +119,70 @@ def get_metadata(
             metadata["maximum_likelihood"]["num_sims"] = num_sims_ml
             metadata["maximum_likelihood"]["num_burn"] = num_burn_ml
     return metadata
+
+
+########################################################################################
+
+
+def get_ks_sensitivity_results(samples: list, labels: list):
+    states = [s.getStates() for s in samples]
+    num_recs = len(labels)
+    test_stats = np.zeros((num_recs, num_recs))
+    pvals = np.zeros((num_recs, num_recs))
+
+    for i in range(num_recs):
+        for j in range(num_recs):
+            stat, pval = ks_2samp(states[i].flatten(), states[j].flatten())
+            if isinstance(stat, np.generic):
+                stat = stat.item()
+            if isinstance(pval, np.generic):
+                pval = pval.item()
+            test_stats[i, j] = stat
+            pvals[i, j] = pval
+
+    test_stats = pd.DataFrame(test_stats, index=labels, columns=labels)
+    pvals = pd.DataFrame(pvals, index=labels, columns=labels)
+
+    pd.options.display.float_format = "{:.2e}".format
+
+    return test_stats, pvals
+
+
+def make_dir(dir_path):
+    try:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+            print(f"Directory '{dir_path}' was created.")
+        else:
+            print(f"Directory '{dir_path}' already exists.")
+    except Exception as e:
+        print(f"An error occurred while creating the directory: {e}")
+
+
+def do_ks_sensitivity_tests(
+    labels,
+    all_samples,
+    sample_names,
+    mouse_name,
+    sens_param,
+    path,
+):
+
+    print(f"{mouse_name}, {sens_param} sensitivity")
+
+    for (
+        samples,
+        sample_name,
+    ) in zip(all_samples, sample_names):
+        test_stats, pvals = get_ks_sensitivity_results(samples, labels)
+
+        print(sample_name + ":")
+
+        print("test statistics:")
+        display(test_stats)
+
+        print("p-values:")
+        display(pvals)
+
+        test_stats.to_csv(path + f"{sample_name}_tstats.csv")
+        pvals.to_csv(path + f"{sample_name}_pvals.csv")
