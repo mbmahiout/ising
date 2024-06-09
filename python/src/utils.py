@@ -19,8 +19,14 @@ def get_all_recording_pcorrs(all_samples: list) -> list:
     ]
 
 
-def get_rmse(true, predicted):
+def get_rmse(true: np.array, predicted: np.array) -> float:
     return np.sqrt(np.mean((true - predicted) ** 2))
+
+
+def get_r_squared(true: np.array, predicted: np.array) -> float:
+    sst = np.sum((true - np.mean(true)) ** 2)
+    ssr = np.sum((true - predicted) ** 2)
+    return 1 - (ssr / sst)
 
 
 # to compare with Nguyen et al.

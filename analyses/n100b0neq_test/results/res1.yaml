@@ -1,0 +1,18 @@
+scatters:
+  fields - ((1, 1)):
+    nMF: 0.216
+    TAP: 0.224
+    ML: 0.016
+  means - ((1, 2)):
+    nMF: 0.062
+    TAP: 0.045
+    ML: 0.006
+  couplings - ((2, 1)):
+    nMF: 0.158
+    TAP: 0.174
+    ML: 0.01
+  pcorrs - ((2, 2)):
+    nMF: 0.041
+    TAP: 0.035
+    ML: 0.007
+histograms: {}

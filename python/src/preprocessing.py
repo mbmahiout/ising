@@ -37,7 +37,7 @@ def get_recording_sample(
         states = subset_units(states, num_units)
 
     states = binary2ising(states)
-    return ising.Sample(states)
+    return ising.Sample(states.T)
 
 
 def get_partitioned_sample(

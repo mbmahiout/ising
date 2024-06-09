@@ -64,7 +64,9 @@ class IsingEval:
             make_subplots(
                 rows=self.num_rows,
                 cols=self.num_cols,
-                subplot_titles=[key[0] for key in self.layout_spec.keys()],
+                subplot_titles=None,
+                horizontal_spacing=0.15,
+                vertical_spacing=0.15,
             )
         )
 
@@ -165,6 +167,8 @@ class IsingEval:
 
         IsingEval._add_id_line(self.fig, interval, row, col)
 
+        ##########################################################################################
+
         # self.fig.update_xaxes(
         #     title_text="True", row=row, col=col
         # )
@@ -172,12 +176,20 @@ class IsingEval:
         #     title_text="Estimated", row=row, col=col
         # )
 
+        ftr_symbol = IsingEval.get_ftr_symbol(ftr_name)
+
         self.fig.update_xaxes(
-            title_text=r"${ftr_symbol}_{\text{True}}$", row=row, col=col
+            title_text=rf"$\Large {{{ftr_symbol}}}^{{\text{{True}}}}$",
+            row=row,
+            col=col,
         )
         self.fig.update_yaxes(
-            title_text=r"${ftr_symbol}_{\text{Est}}$", row=row, col=col
+            title_text=rf"$\Large {{{ftr_symbol}}}^{{\text{{Est}}}}$",
+            row=row,
+            col=col,
         )
+
+    ##########################################################################################
 
     def plot_histogram(self, ftr_name, row, col):
         num_bins = 20
@@ -337,6 +349,20 @@ class IsingEval:
         return test_results
 
     # --- misc --- #
+    @staticmethod
+    def get_ftr_symbol(ftr_name):
+        # Define a mapping from ftr_name to LaTeX symbols
+        ftr_symbols = {
+            "fields": r"h_i",
+            "couplings": r"J_{ij}",
+            "means": r"m_i",
+            "pcorrs": r"\chi_{ij}",
+            "ccorrs": r"C_{ij}",
+            "dcorrs": r"D_{ij}",
+            "tricorrs": r"T_{ij}",
+            "num-distr": r"p(N)",
+        }
+        return ftr_symbols.get(ftr_name, r"O")
 
     @staticmethod
     def get_ftr(model, sample, ftr_name):

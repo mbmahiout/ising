@@ -192,13 +192,8 @@ class EqFitter(IsingFitter):
             root1 = (-1 + sqrt_fact) / (4 * means[i] * means[j])
             root2 = (-1 - sqrt_fact) / (4 * means[i] * means[j])
             roots = [root1, root2]
-            real_roots = list(filter(lambda r: abs(r.imag) < 1e-5, roots))
-            if not len(real_roots) == 0:
-                real_roots = list(map(lambda r: r.real, real_roots))
-            else:
-                real_roots = real_roots = list(map(lambda r: r.real, roots))
-            min_root = min(real_roots, key=abs)
-            return min_root
+            min_root = min(roots, key=abs)
+            return min_root.real
 
         num_units = self.model.getNumUnits()
         ccorrs_inv = self._get_ccorrs_inv(sample)
@@ -253,25 +248,19 @@ class NeqFitter(IsingFitter):
 
     def _calc_F(self, A_naive, dcorrs, ccorrs_inv):
         num_units = self.model.getNumUnits()
-        term3 = 1
-        term2 = 0
-        term1 = -1
         A_naive_inv = get_inv_mat(A_naive, size=num_units)
         couplings_nmf = self._get_neq_mean_field_couplings(
             A_naive_inv, dcorrs, ccorrs_inv
         )
         couplings_nmf_sq = couplings_nmf**2
         A_naive_diag = np.diagonal(A_naive)
-        term0_vec = A_naive_diag * np.matmul(couplings_nmf_sq, A_naive_diag)
+        coef0_vec = -A_naive_diag * np.matmul(couplings_nmf_sq, A_naive_diag)
 
         min_roots = []
         for i in range(num_units):
-            Fi_poly = np.polynomial.Polynomial([term0_vec[i], term1, term2, term3])
-            roots = Fi_poly.roots()
-            real_roots = list(filter(lambda r: abs(r.imag) < 1e-5, roots))
-            real_roots = list(map(lambda r: r.real, real_roots))
-            min_root = min(real_roots, key=abs)
-            min_roots.append(min_root)
+            roots = np.roots([1, -2, 1, coef0_vec[i]])
+            min_root = min(roots, key=abs)
+            min_roots.append(min_root.real)
         F = np.array(min_roots)
         return F
 
