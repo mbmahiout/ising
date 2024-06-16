@@ -279,6 +279,7 @@ namespace EqInverse
 
         Eigen::MatrixXd dJ{pcorrs - pcorrs_sim};
         Eigen::VectorXd dh{means - means_sim};
+        dJ.diagonal().setZero();
 
         return {dh, dJ};
     }

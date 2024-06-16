@@ -9,7 +9,12 @@ from ipywidgets import HBox, VBox, widgets
 from IPython.display import display
 import os
 
-from src.utils import get_rmse
+from src.utils import (
+    get_rmse,
+    get_3rd_order_corrs,
+    get_unique_3d_tensor_vals,
+    get_unique_matrix_vals,
+)
 
 
 class IsingEval:
@@ -370,23 +375,22 @@ class IsingEval:
             return model.getFields()
 
         elif ftr_name == "couplings":
-            return model.getCouplings().flatten()
+            return get_unique_matrix_vals(model.getCouplings())
 
         elif ftr_name == "means":
             return sample.getMeans()
 
         elif ftr_name == "pcorrs":
-            return sample.getPairwiseCorrs().flatten()
+            return get_unique_matrix_vals(sample.getPairwiseCorrs())
 
         elif ftr_name == "ccorrs":
-            return sample.getConnectedCorrs().flatten()
+            return get_unique_matrix_vals(sample.getConnectedCorrs())
 
         elif ftr_name == "dcorrs":
-            return sample.getDelayedCorrs().flatten()
+            return get_unique_matrix_vals(sample.getDelayedCorrs(1))
 
         elif ftr_name == "tricorrs":
-            # return sample.get_3rd_order_corrs().flatten()
-            raise NotImplementedError("TO-DO")
+            return get_unique_3d_tensor_vals(get_3rd_order_corrs(sample.getStates()))
 
         elif ftr_name == "num-distr":
             # return sample.get_num_active_distr()

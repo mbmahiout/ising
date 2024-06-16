@@ -1,5 +1,6 @@
 #include "sample.h"
 #include <Eigen/Dense>
+// #include <Eigen/Tensor>
 
 void Sample::setMeans() const
 {
@@ -32,3 +33,7 @@ void Sample::setDelayedCorrs(int dt) const
     m_dcorrs = D - m_head * m_tail.transpose();
     m_isDcorrsSet = true;
 }
+
+// void Sample::setTriCorrs() const
+// {
+// }

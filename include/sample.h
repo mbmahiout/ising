@@ -13,18 +13,21 @@ private:
     mutable Eigen::MatrixXd m_pcorrs{};
     mutable Eigen::MatrixXd m_ccorrs{};
     mutable Eigen::MatrixXd m_dcorrs{};
+    // mutable Eigen::MatrixXd m_tricorrs{};
 
     // flags
     mutable bool m_isMeansSet{false};
     mutable bool m_isPcorrsSet{false};
     mutable bool m_isCcorrsSet{false};
     mutable bool m_isDcorrsSet{false};
+    // mutable bool m_isTriCorrsSet{false};
 
     // setters
     void setMeans() const;
     void setPairwiseCorrs() const;
     void setConnectedCorrs() const;
     void setDelayedCorrs(int dt) const;
+    // void setTriCorrs() const;
 
 public:
     Sample(Eigen::MatrixXi states)
@@ -74,6 +77,15 @@ public:
         }
         return m_dcorrs;
     }
+
+    // [[nodiscard]] Eigen::MatrixXd getTriCorrs() const
+    // {
+    //     if (!m_isTriCorrsSet)
+    //     {
+    //         setTriCorrs();
+    //     }
+    //     return m_tricorrs;
+    // }
 };
 
 #endif // SAMPLE_H

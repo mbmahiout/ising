@@ -49,28 +49,28 @@ class IsingFitter:
 
     def set_gradient_ascent_outputs(self, out, calc_llh):
         # parameters history
-        self.fields_history = out.params.fields
-        self.couplings_history = out.params.couplings
+        self.fields_history += out.params.fields
+        self.couplings_history += out.params.couplings
 
         # gradients
-        self.fields_grads = out.grads.fieldsGrads
-        self.couplings_grads = out.grads.couplingsGrads
+        self.fields_grads += out.grads.fieldsGrads
+        self.couplings_grads += out.grads.couplingsGrads
 
         # parameter statistics
-        self.av_fields = out.stats.avFields
-        self.av_couplings = out.stats.avCouplings
+        self.av_fields += out.stats.avFields
+        self.av_couplings += out.stats.avCouplings
 
-        self.sd_fields = out.stats.sdFields
-        self.sd_couplings = out.stats.sdCouplings
+        self.sd_fields += out.stats.sdFields
+        self.sd_couplings += out.stats.sdCouplings
 
-        self.min_fields = out.stats.minFields
-        self.min_couplings = out.stats.minCouplings
+        self.min_fields += out.stats.minFields
+        self.min_couplings += out.stats.minCouplings
 
-        self.max_fields = out.stats.maxFields
-        self.max_couplings = out.stats.maxCouplings
+        self.max_fields += out.stats.maxFields
+        self.max_couplings += out.stats.maxCouplings
 
         if calc_llh:
-            self.llhs = out.stats.LLHs
+            self.llhs += out.stats.LLHs
 
     def naive_mean_field(self, sample):
         self.check_sample_dims(sample)

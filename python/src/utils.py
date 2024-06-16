@@ -1,8 +1,22 @@
+import sys
+
+path2cpp_pkg = "/Users/mariusmahiout/Documents/repos/ising_core/build"
+sys.path.append(path2cpp_pkg)
+import ising
+
 import numpy as np
 from scipy.stats import ks_2samp
 import pandas as pd
 import os
 from IPython.display import display
+
+
+def get_train_test_samples(sample: ising.Sample, prop_train=0.7) -> tuple:
+    num_bins = sample.getStates().shape[1]
+    num_train = int(prop_train * num_bins)
+    states_train = sample.getStates()[:, :num_train]
+    states_test = sample.getStates()[:, num_train:]
+    return ising.Sample(states_train), ising.Sample(states_test)
 
 
 def get_all_recording_means(all_samples: list) -> list:
@@ -192,3 +206,60 @@ def do_ks_sensitivity_tests(
 
         test_stats.to_csv(path + f"{sample_name}_tstats.csv")
         pvals.to_csv(path + f"{sample_name}_pvals.csv")
+
+
+########################################################################################
+
+
+def _get_unit_array(states: np.array, idx: int):
+    """
+    generates an array whose faces [t, :, :]
+    are nunits * nunits copies of the state of unit k in bin t
+    """
+    num_units = states.shape[1]
+    idx_array = np.repeat(states[:, idx, np.newaxis], num_units, axis=1)
+    idx_array = np.repeat(idx_array[:, :, np.newaxis], num_units, axis=2)
+    return idx_array
+
+
+def _get_pair_prods(states: np.array):
+    """
+    generates an array whose faces [t, :, :]
+    are all products s_i(t) * s_j(t) of units i and j at time t
+    """
+    num_units = states.shape[1]
+    states_extd = np.repeat(states[:, :, np.newaxis], num_units, axis=2)  # S.T extended
+    states_extd_trans = states_extd.transpose(
+        0, 2, 1
+    )  # keeps the 0th axis in place (i.e., the bins), and transposes the remaining two
+    pair_prods = (
+        states_extd * states_extd_trans
+    )  # element-wise multiplication of the array elements yields the required array
+    return pair_prods
+
+
+def get_3rd_order_corrs(states: np.array):
+    """
+    calculates the 3rd order correlations
+    between the units in a recorded population
+    """
+    states = states.T
+    num_units = states.shape[1]
+    pair_prods = _get_pair_prods(states)
+    tricorrs = np.zeros((num_units, num_units, num_units))
+    for i in range(num_units):
+        i_array = _get_unit_array(states, i)
+        prod_array = pair_prods * i_array
+        tricorrs[i, :, :] = np.mean(prod_array, axis=0)
+    return tricorrs
+
+
+def get_unique_3d_tensor_vals(tensor: np.array) -> np.array:
+    i, j, k = np.indices(tensor.shape)
+    mask = (i <= j) & (j <= k)
+    return tensor[mask]
+
+
+def get_unique_matrix_vals(matrix: np.array) -> np.array:
+    i, j = np.triu_indices(n=matrix.shape[0], k=1)
+    return matrix[i, j]
