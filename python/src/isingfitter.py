@@ -6,7 +6,7 @@ path2cpp_pkg = (
 sys.path.append(path2cpp_pkg)
 import ising
 
-from src.utils import stable_arctanh, get_inv_mat
+from utils import stable_arctanh, get_inv_mat
 import numpy as np
 
 

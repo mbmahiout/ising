@@ -9,11 +9,12 @@ from ipywidgets import HBox, VBox, widgets
 from IPython.display import display
 import os
 
-from src.utils import (
+from utils import (
     get_rmse,
     get_3rd_order_corrs,
     get_unique_3d_tensor_vals,
     get_unique_matrix_vals,
+    is_notebook,
 )
 
 
@@ -50,14 +51,16 @@ class IsingEval:
         self.save_button_results = widgets.Button(description="Save results")
         self.save_button_results.on_click(self.save_results)
         self.color_palette = [
-            "blue",
-            "green",
-            "red",
-            "orange",
-            "purple",
-            "cyan",
-            "brown",
-            "magenta",
+            "darkorange",
+            "slateblue",
+            # "blue",
+            # "green",
+            # "red",
+            # "orange",
+            # "purple",
+            # "cyan",
+            # "brown",
+            # "magenta",
         ]
 
     ################
@@ -89,20 +92,26 @@ class IsingEval:
             width=400 * self.num_cols,
         )
 
-        display(
-            VBox(
-                [
-                    self.fig,
-                    HBox(
-                        [
-                            self.save_button_figure,
-                            self.save_button_results,
-                            self.save_button_metadata,
-                        ]
-                    ),
-                ]
+        # if notebook
+        if is_notebook():
+            display(
+                VBox(
+                    [
+                        self.fig,
+                        HBox(
+                            [
+                                self.save_button_figure,
+                                self.save_button_results,
+                                self.save_button_metadata,
+                            ]
+                        ),
+                    ]
+                )
             )
-        )
+        else:
+            self.save_figure(None)
+            self.save_results(None)
+            self.save_metadata(None)
 
     def save_figure(self, button):
         analysis_path = self.analysis_path
@@ -138,6 +147,7 @@ class IsingEval:
         with open(curr_res_path, "w") as file:
             yaml.dump(results, file, default_flow_style=False, sort_keys=False)
 
+    # if notebook
     def save_metadata(self, button):  # can overwrite (or only save once)
         analysis_path = self.analysis_path
         IsingEval._make_dir(analysis_path)
@@ -171,16 +181,6 @@ class IsingEval:
         interval = IsingEval.get_padded_interval(min_val, max_val, pad)
 
         IsingEval._add_id_line(self.fig, interval, row, col)
-
-        ##########################################################################################
-
-        # self.fig.update_xaxes(
-        #     title_text="True", row=row, col=col
-        # )
-        # self.fig.update_yaxes(
-        #     title_text="Estimated", row=row, col=col
-        # )
-
         ftr_symbol = IsingEval.get_ftr_symbol(ftr_name)
 
         self.fig.update_xaxes(
@@ -193,8 +193,6 @@ class IsingEval:
             row=row,
             col=col,
         )
-
-    ##########################################################################################
 
     def plot_histogram(self, ftr_name, row, col):
         num_bins = 20

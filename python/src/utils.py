@@ -9,6 +9,18 @@ from scipy.stats import ks_2samp
 import pandas as pd
 import os
 from IPython.display import display
+from IPython import get_ipython
+
+
+def is_notebook():
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == "ZMQInteractiveShell":
+            return True
+        else:
+            return False
+    except NameError:
+        return False
 
 
 def get_train_test_samples(sample: ising.Sample, prop_train=0.7) -> tuple:

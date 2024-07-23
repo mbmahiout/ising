@@ -1,5 +1,5 @@
-from src.isingfitter import IsingFitter
-import src.utils as utils
+from isingfitter import IsingFitter
+import utils as utils
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,6 +7,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from IPython.display import display
 import ipywidgets as widgets
+import networkx as nx
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
+import matplotlib.gridspec as gridspec
 
 
 def get_hex_colors(num_colors, cmap_name="viridis"):
@@ -427,3 +431,88 @@ def plot_analytic_simulated_scatter_comparisons(
         button = widgets.Button(description="Save Figure")
         button.on_click(save_figure)
         display(button)
+
+
+###########################################################################################################
+
+
+def plot_coupling_graph_and_matrix(
+    J: np.ndarray,
+    threshold: float = 0.2,
+    num_units: int = None,
+    directed: bool = True,
+    fname: str = None,
+):
+    if directed:
+        G = nx.DiGraph()
+        arrow_size = 15
+    else:
+        G = nx.Graph()
+        arrow_size = None
+
+    if num_units is None:
+        num_units = J.shape[0]
+
+    for i in range(num_units):
+        G.add_node(i)
+
+    for i in range(num_units):
+        for j in range(num_units):
+            if i != j and abs(J[i, j]) > threshold:
+                G.add_edge(i, j, weight=J[i, j])
+
+    layout = nx.circular_layout(G)
+
+    edges = G.edges(data=True)
+    weights = [edge[2]["weight"] for edge in edges]
+    max_weight = np.max(np.abs(weights)) + 0.01
+    min_weight = -max_weight
+
+    # normalizing weights for thickness
+    normalized_weights = [
+        4 * abs(w) / max(abs(max_weight), abs(min_weight)) for w in weights
+    ]
+
+    cmap = plt.cm.bwr
+    norm = Normalize(vmin=min_weight, vmax=max_weight)
+    edge_colors = [cmap(norm(w)) for w in weights]
+
+    fig = plt.figure(figsize=(23, 12))
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1.4, 1])  # adjusted width ratios
+
+    # graph
+    ax1 = fig.add_subplot(gs[0])
+    nx.draw_networkx_nodes(G, layout, node_color="slategrey", node_size=300, ax=ax1)
+    nx.draw_networkx_labels(G, layout, font_size=14, font_color="white", ax=ax1)
+    if directed:
+        nx.draw_networkx_edges(
+            G,
+            layout,
+            edge_color=edge_colors,
+            width=normalized_weights,
+            ax=ax1,
+            arrows=directed,
+            arrowstyle="->",
+            arrowsize=arrow_size,
+        )
+    else:
+        nx.draw_networkx_edges(
+            G, layout, edge_color=edge_colors, width=normalized_weights, ax=ax1
+        )
+    ax1.axis("off")
+
+    # heatmap of coupling matrix
+    ax2 = fig.add_subplot(gs[1])
+    cax = ax2.matshow(J[:num_units, :num_units], cmap=cmap, norm=norm)
+    ax2.set_xlabel(r"Unit $i$", fontsize=17)
+    ax2.set_ylabel(r"Unit $j$", fontsize=17)
+
+    # color bar
+    sm = ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=[ax1, ax2], fraction=0.03, pad=0.04)
+    cbar.set_label(r"$J_{ij}$", fontsize=22)
+
+    if fname is not None:
+        plt.savefig(f"{fname}.pdf")
+    plt.show()

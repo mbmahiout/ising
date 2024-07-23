@@ -1,0 +1,14 @@
+scatters:
+  means - ((1, 1)):
+    EQ: 0.022
+    NEQ: 0.002
+  ccorrs - ((1, 2)):
+    EQ: 0.004
+    NEQ: 0.002
+  dcorrs - ((2, 1)):
+    EQ: 0.004
+    NEQ: 0.001
+  tricorrs - ((2, 2)):
+    EQ: 0.033
+    NEQ: 0.004
+histograms: {}

@@ -19,7 +19,7 @@ def get_recording_sample(
     mouse_name,
     bin_width=50,
     num_units=None,
-    is_shuffled_units=True,
+    is_shuffled_units=False,
     is_shuffled_bins=False,
     data_dir="data",
 ):
