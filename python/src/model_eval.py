@@ -31,6 +31,7 @@ class IsingEval:
         layout_spec,
         analysis_path=None,
         metadata=None,
+        is_eq_vs_neq=False,
     ):
         """
         layout_spec: A dictionary specifying the layout of plots and their types. Example:
@@ -52,18 +53,22 @@ class IsingEval:
         self.save_button_metadata.on_click(self.save_metadata)
         self.save_button_results = widgets.Button(description="Save results")
         self.save_button_results.on_click(self.save_results)
-        self.color_palette = [
-            # "darkorange",
-            # "slateblue",
-            "blue",
-            "green",
-            "red",
-            "orange",
-            "purple",
-            "cyan",
-            "brown",
-            "magenta",
-        ]
+        if is_eq_vs_neq:
+            self.color_palette = [
+                "darkorange",
+                "slateblue",
+            ]
+        else:
+            self.color_palette = [
+                "blue",
+                "green",
+                "red",
+                "orange",
+                "purple",
+                "cyan",
+                "brown",
+                "magenta",
+            ]
 
     ################
     # core methods #
