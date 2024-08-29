@@ -12,6 +12,12 @@ from IPython.display import display
 from IPython import get_ipython
 
 
+def print_elapsed_time(t1, t2):
+    dt = t2 - t1
+    mins, secs = divmod(dt, 60)
+    print(f"dt: {mins} min, {round(secs, 5)} sec")
+
+
 def is_notebook():
     try:
         shell = get_ipython().__class__.__name__
@@ -250,6 +256,17 @@ def _get_pair_prods(states: np.array):
     return pair_prods
 
 
+def get_unique_3d_tensor_vals(tensor: np.array) -> np.array:
+    i, j, k = np.indices(tensor.shape)
+    mask = (i <= j) & (j <= k)
+    return tensor[mask]
+
+
+def get_unique_matrix_vals(matrix: np.array) -> np.array:
+    i, j = np.triu_indices(n=matrix.shape[0], k=1)
+    return matrix[i, j]
+
+
 def get_3rd_order_corrs(states: np.array):
     """
     calculates the 3rd order correlations
@@ -266,12 +283,17 @@ def get_3rd_order_corrs(states: np.array):
     return tricorrs
 
 
-def get_unique_3d_tensor_vals(tensor: np.array) -> np.array:
-    i, j, k = np.indices(tensor.shape)
-    mask = (i <= j) & (j <= k)
-    return tensor[mask]
+def get_num_active(states: np.ndarray):
+    active_units = states == 1
+    num_active = np.count_nonzero(active_units, axis=0)
+    return num_active
 
 
-def get_unique_matrix_vals(matrix: np.array) -> np.array:
-    i, j = np.triu_indices(n=matrix.shape[0], k=1)
-    return matrix[i, j]
+def get_coactivation_distribution(states: np.ndarray):
+    num_units, num_bins = states.shape
+    rel_freq = np.zeros(num_units + 1)
+    for bin in range(num_bins):
+        active_units = states[:, bin] == 1
+        num_active = int(np.count_nonzero(active_units))
+        rel_freq[num_active] += 1 / num_bins
+    return rel_freq

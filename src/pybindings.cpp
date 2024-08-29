@@ -39,6 +39,7 @@ PYBIND11_MODULE(ising, m)
         .def("getNumUnits", &EqModel::getNumUnits)
         .def("getFields", &EqModel::getFields)
         .def("getCouplings", &EqModel::getCouplings)
+        .def("getHamiltonian", &EqModel::getHamiltonian)
 
         // simulation
         .def("simulate", &EqModel::simulate);

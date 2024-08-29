@@ -284,8 +284,6 @@ def plot_empirical_histograms(
         height=400 * num_rows, width=400 * num_cols, margin=dict(l=100, t=40, b=70)
     )
 
-    display(fig)
-
     if path is not None:  # to-do: also check if is notebook
         button = widgets.Button(description="Save Figure")
         button.on_click(save_figure)

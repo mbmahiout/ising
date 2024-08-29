@@ -1,18 +1,13 @@
 import sys
 import os
 
-# Get the current directory of the script
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Construct the path to the cpp package
-path2cpp_pkg = "/Users/mariusmahiout/Documents/repos/ising_core/build"  # os.path.join(current_dir, "..", "build")
-
-# Add the path to sys.path
+path2cpp_pkg = "/Users/mariusmahiout/Documents/repos/ising_core/build"
 sys.path.append(path2cpp_pkg)
 
 import ising
 import os
 import sys
+import time
 
 import preprocessing as pre
 import model_eval as eval
@@ -33,7 +28,7 @@ sens_param = "time"
 path = "analyses"
 utils.make_dir(path)
 
-num_units = 50
+num_units = 35  # 0
 bin_width = 50  # ms
 
 sample = pre.get_recording_sample(
@@ -43,7 +38,7 @@ sample = pre.get_recording_sample(
     num_units=num_units,
 )
 
-num_sims = 50_000
+num_sims = 15_000  # 50_000
 num_burn = 5_000
 lr = 0.1
 win_size = 10
@@ -71,39 +66,39 @@ eq_fitter.TAP(sample)
 print("Starting inference (EQ)")
 eq_fitter.maximize_likelihood(
     sample=sample,
-    max_steps=4000,
+    max_steps=4_00,  # 0,
     learning_rate=0.05,
     win_size=win_size,
     tolerance=tol_ml,
-    num_sims=50_000,
-    num_burn=5_000,
+    num_sims=num_sims,
+    num_burn=num_burn,
     calc_llh=False,
 )
-print("Run 1 - eta = 0.05, steps = 4000: DONE")
+print("Run 1 - eta = 0.05, DONE")
 
-eq_fitter.maximize_likelihood(
-    sample=sample,
-    max_steps=6000,
-    learning_rate=0.025,
-    win_size=win_size,
-    tolerance=tol_ml,
-    num_sims=50_000,
-    num_burn=5_000,
-    calc_llh=False,
-)
-print("Run 2 - eta = 0.025, steps = 6000: DONE")
+# eq_fitter.maximize_likelihood(
+#     sample=sample,
+#     max_steps=4_000,
+#     learning_rate=0.025,
+#     win_size=win_size,
+#     tolerance=tol_ml,
+#     num_sims=num_sims,
+#     num_burn=num_burn,
+#     calc_llh=False,
+# )
+# print("Run 2 - eta = 0.025, DONE")
 
-eq_fitter.maximize_likelihood(
-    sample=sample,
-    max_steps=8000,
-    learning_rate=0.01,
-    win_size=win_size,
-    tolerance=tol_ml,
-    num_sims=50_000,
-    num_burn=5_000,
-    calc_llh=False,
-)
-print("Run 3 - eta = 0.01, steps = 8000: DONE")
+# eq_fitter.maximize_likelihood(
+#     sample=sample,
+#     max_steps=8_000,
+#     learning_rate=0.01,
+#     win_size=win_size,
+#     tolerance=tol_ml,
+#     num_sims=num_sims,
+#     num_burn=num_burn,
+#     calc_llh=False,
+# )
+# print("Run 3 - eta = 0.01, DONE")
 
 
 ###################
@@ -125,30 +120,30 @@ neq_fitter.TAP(sample)
 print("Starting inference (NEQ)")
 neq_fitter.maximize_likelihood(
     sample=sample,
-    max_steps=4000,
+    max_steps=4_00,  # 0,
     learning_rate=0.05,
     win_size=win_size,
     tolerance=1e-16,
 )
-print("Run 1 - eta = 0.05, steps = 4000: DONE")
+print("Run 1 - eta = 0.05, DONE")
 
-neq_fitter.maximize_likelihood(
-    sample=sample,
-    max_steps=6000,
-    learning_rate=0.025,
-    win_size=win_size,
-    tolerance=1e-16,
-)
-print("Run 2 - eta = 0.025, steps = 6000: DONE")
+# neq_fitter.maximize_likelihood(
+#     sample=sample,
+#     max_steps=4_000,
+#     learning_rate=0.025,
+#     win_size=win_size,
+#     tolerance=1e-16,
+# )
+# print("Run 2 - eta = 0.025, DONE")
 
-neq_fitter.maximize_likelihood(
-    sample=sample,
-    max_steps=8000,
-    learning_rate=0.01,
-    win_size=win_size,
-    tolerance=1e-16,
-)
-print("Run 3 - eta = 0.01, steps = 8000: DONE")
+# neq_fitter.maximize_likelihood(
+#     sample=sample,
+#     max_steps=8_000,
+#     learning_rate=0.01,
+#     win_size=win_size,
+#     tolerance=1e-16,
+# )
+# print("Run 3 - eta = 0.01, DONE")
 
 eq_sim = eq_model.simulate(num_sims, num_burn)
 neq_sim = neq_model.simulate(num_sims, num_burn)
@@ -173,26 +168,43 @@ analysis_name = "rec_test"
 bin_width = 0
 analysis_path = utils.get_analysis_path(analysis_name, num_units, bin_width)
 
-layout_spec = {
+layout_spec1 = {
+    ("fields", "histogram"): (1, 1),
+    ("couplings", "histogram"): (1, 2),
+}
+ising_eval1 = eval.IsingEval(
+    analysis_path=analysis_path,
+    metadata=metadata,
+    true_model=eq_model,
+    est_models=[neq_model],  # [eq_model, neq_model],  #
+    true_sample=sample,
+    est_samples=[neq_sim],  # [eq_sim, neq_sim],
+    labels=["NEQ"],
+    layout_spec=layout_spec1,
+)
+ising_eval1.generate_plots(is_pdf=False)
+
+layout_spec2 = {
     ("means", "scatter"): (1, 1),
     ("ccorrs", "scatter"): (1, 2),
     ("dcorrs", "scatter"): (2, 1),
     ("tricorrs", "scatter"): (2, 2),
 }
-
-ising_eval = eval.IsingEval(
+ising_eval2 = eval.IsingEval(
     analysis_path=analysis_path,
     metadata=metadata,
     true_model=None,
     est_models=[eq_model, neq_model],  #
     true_sample=sample,
-    est_samples=[eq_sim, neq_sim],  # ],#
+    est_samples=[eq_sim, neq_sim],
     labels=labels,
-    layout_spec=layout_spec,
+    layout_spec=layout_spec2,
 )
-ising_eval.generate_plots()
+ising_eval2.generate_plots(is_pdf=False)
+
 
 units2show = 50
+units2show = min(num_units, units2show)
 misc_plotting.plot_coupling_graph_and_matrix(
     J=neq_model.getCouplings(),
     threshold=0.0,
@@ -208,18 +220,18 @@ misc_plotting.plot_coupling_graph_and_matrix(
     fname=f"{analysis_path}/coupling_graph_eq{num_units}_{units2show}",
 )
 
-if units2show != num_units:
-    misc_plotting.plot_coupling_graph_and_matrix(
-        J=neq_model.getCouplings(),
-        threshold=0.0,
-        num_units=num_units,
-        directed=True,
-        fname=f"{analysis_path}/coupling_graph_neq_{num_units}_{num_units}",
-    )
-    misc_plotting.plot_coupling_graph_and_matrix(
-        J=eq_model.getCouplings(),
-        threshold=0.0,
-        num_units=num_units,
-        directed=False,
-        fname=f"{analysis_path}/coupling_graph_eq{num_units}_{num_units}",
-    )
+# if units2show != num_units:
+#     misc_plotting.plot_coupling_graph_and_matrix(
+#         J=neq_model.getCouplings(),
+#         threshold=0.0,
+#         num_units=num_units,
+#         directed=True,
+#         fname=f"{analysis_path}/coupling_graph_neq_{num_units}_{num_units}",
+#     )
+#     misc_plotting.plot_coupling_graph_and_matrix(
+#         J=eq_model.getCouplings(),
+#         threshold=0.0,
+#         num_units=num_units,
+#         directed=False,
+#         fname=f"{analysis_path}/coupling_graph_eq{num_units}_{num_units}",
+#     )

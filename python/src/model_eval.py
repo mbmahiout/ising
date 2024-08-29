@@ -8,10 +8,12 @@ import plotly.io as pio
 from ipywidgets import HBox, VBox, widgets
 from IPython.display import display
 import os
+import time
 
 from utils import (
     get_rmse,
     get_3rd_order_corrs,
+    get_num_active,
     get_unique_3d_tensor_vals,
     get_unique_matrix_vals,
     is_notebook,
@@ -51,23 +53,23 @@ class IsingEval:
         self.save_button_results = widgets.Button(description="Save results")
         self.save_button_results.on_click(self.save_results)
         self.color_palette = [
-            "darkorange",
-            "slateblue",
-            # "blue",
-            # "green",
-            # "red",
-            # "orange",
-            # "purple",
-            # "cyan",
-            # "brown",
-            # "magenta",
+            # "darkorange",
+            # "slateblue",
+            "blue",
+            "green",
+            "red",
+            "orange",
+            "purple",
+            "cyan",
+            "brown",
+            "magenta",
         ]
 
     ################
     # core methods #
     ################
 
-    def generate_plots(self):
+    def generate_plots(self, is_pdf):
         self.fig = go.FigureWidget(
             make_subplots(
                 rows=self.num_rows,
@@ -109,17 +111,22 @@ class IsingEval:
                 )
             )
         else:
-            self.save_figure(None)
+            self.save_figure(None, is_pdf)
+            time.sleep(2)
+            self.save_figure(None, is_pdf)
             self.save_results(None)
             self.save_metadata(None)
 
-    def save_figure(self, button):
+    def save_figure(self, button, is_pdf=True):
         analysis_path = self.analysis_path
         figs_path = analysis_path + "figures/"
         IsingEval._make_dir(analysis_path)
         IsingEval._make_dir(figs_path)
 
-        fig_fname = "fig1.pdf"
+        if is_pdf:
+            fig_fname = "fig1.pdf"
+        else:
+            fig_fname = "fig1.png"
         curr_fig_path = figs_path + fig_fname
 
         path_exists = os.path.exists(curr_fig_path)
@@ -228,11 +235,10 @@ class IsingEval:
             col=col,
         )
 
+        ftr_symbol = IsingEval.get_ftr_symbol(ftr_name)
         self.fig.update_yaxes(range=[0, 1], row=row, col=col)
-        self.fig.update_xaxes(
-            title_text="Values", row=row, col=col
-        )  # TO-DO: title_text=rf"${ftr_sumbol}$"
-        self.fig.update_yaxes(title_text="Rel. Freq.", row=row, col=col)
+        self.fig.update_xaxes(title_text=rf"$\Large {ftr_symbol}$", row=row, col=col)
+        self.fig.update_yaxes(title_text=rf"$\Large P({ftr_symbol})$", row=row, col=col)
 
     @staticmethod
     def _add_comparison_scatter(fig, true_data, est_data, color, label, row, col):
@@ -363,7 +369,7 @@ class IsingEval:
             "ccorrs": r"C_{ij}",
             "dcorrs": r"D_{ij}",
             "tricorrs": r"T_{ij}",
-            "num-distr": r"p(N)",
+            "num-distr": r"N^+",
         }
         return ftr_symbols.get(ftr_name, r"O")
 
@@ -391,8 +397,7 @@ class IsingEval:
             return get_unique_3d_tensor_vals(get_3rd_order_corrs(sample.getStates()))
 
         elif ftr_name == "num-distr":
-            # return sample.get_num_active_distr()
-            raise NotImplementedError("TO-DO")
+            return get_num_active(sample.getStates())
 
         else:
             raise ValueError(f"'{ftr_name}' is not a valid feature")

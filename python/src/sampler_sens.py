@@ -6,8 +6,8 @@ path2cpp_pkg = (
 sys.path.append(path2cpp_pkg)
 import ising
 
-from src.utils import get_rmse, int_linspace
-from src.misc_plotting import plot_generalized
+from utils import get_rmse, int_linspace
+from misc_plotting import plot_generalized
 
 import numpy as np
 import pandas as pd

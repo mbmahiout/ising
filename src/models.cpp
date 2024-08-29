@@ -57,10 +57,17 @@ void EqModel::updateState()
 {
     int idx{Random::get(0, m_numUnits - 1)};
     double energyFlip{getEnergyChange(idx)};
-    double probFlip{std::exp(-energyFlip)};
-    double u{Misc::getUniformSample(0, 1)};
-    if (u < probFlip)
+    if (energyFlip < 0)
+    {
         m_state(idx) *= -1;
+    }
+    else
+    {
+        double probFlip{std::exp(-energyFlip)};
+        double u{Misc::getUniformSample(0, 1)};
+        if (u < probFlip)
+            m_state(idx) *= -1;
+    }
 }
 
 Eigen::MatrixXi EqModel::genFullStateSpace() const
