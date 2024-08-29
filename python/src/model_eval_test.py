@@ -6,7 +6,6 @@ from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 import plotly.io as pio
 from ipywidgets import HBox, VBox, widgets
-from plotly.graph_objs import FigureWidget
 from IPython.display import display
 import os
 import time
@@ -33,13 +32,11 @@ class IsingEval:
         analysis_path=None,
         metadata=None,
         is_eq_vs_neq=False,
-        use_overlay=False,
         num_bins=20,
     ):
         """
-        layout_spec: A dictionary specifying the layout of plots and their types.
-                     Example:
-                     {("fields", "scatter"): 1, ("means", "distribution"): (2, 1), ("couplings", "scatter"): (3, 2), ...}
+        layout_spec: A dictionary specifying the layout of plots and their types. Example:
+        {("fields", "scatter"): (1, 1), ("means", "distribution"): (1, 2), ("couplings", "scatter"): (2, 1), ...}
         """
         self.true_model = true_model
         self.est_models = est_models
@@ -49,27 +46,16 @@ class IsingEval:
         self.layout_spec = layout_spec
         self.analysis_path = analysis_path
         self.metadata = metadata
-
-        # calculate num_rows and num_cols based on layout_spec
-        self.num_rows = max(
-            [
-                spec[0] if isinstance(spec, tuple) else spec
-                for spec in layout_spec.values()
-            ]
-        )
-        self.num_cols = max(
-            [spec[1] for spec in layout_spec.values() if isinstance(spec, tuple)],
-            default=1,
-        )
-
+        self.num_rows = max([spec[0] for spec in layout_spec.values()])
+        self.num_cols = max([spec[1] for spec in layout_spec.values()])
         self.save_button_figure = widgets.Button(description="Save figure")
         self.save_button_figure.on_click(self.save_figure)
         self.save_button_metadata = widgets.Button(description="Save metadata")
         self.save_button_metadata.on_click(self.save_metadata)
         self.save_button_results = widgets.Button(description="Save results")
         self.save_button_results.on_click(self.save_results)
-        self.use_overlay = use_overlay
         self.num_bins = num_bins
+
         if is_eq_vs_neq:
             self.color_palette = [
                 "darkorange",
@@ -92,44 +78,24 @@ class IsingEval:
     ################
 
     def generate_plots(self, is_pdf):
-        # Prepare the specs for each subplot
-        specs = [[{} for _ in range(self.num_cols)] for _ in range(self.num_rows)]
-        for (ftr_name, plot_type), spec in self.layout_spec.items():
-            if isinstance(spec, tuple):
-                row, col = spec
-                specs[row - 1][col - 1] = {}
-            else:
-                row = spec
-                specs[row - 1][0] = {"colspan": self.num_cols}
-                for i in range(1, self.num_cols):
-                    specs[row - 1][i] = None  # Span all columns
-
-        # Create subplots with the correct specs
-        self.fig = make_subplots(
-            rows=self.num_rows,
-            cols=self.num_cols,
-            subplot_titles=None,
-            horizontal_spacing=0.15,
-            vertical_spacing=0.15,
-            specs=specs,
+        self.fig = go.FigureWidget(
+            make_subplots(
+                rows=self.num_rows,
+                cols=self.num_cols,
+                subplot_titles=None,
+                horizontal_spacing=0.15,
+                vertical_spacing=0.15,
+            )
         )
 
-        for (ftr_name, plot_type), spec in self.layout_spec.items():
-            if isinstance(spec, tuple):
-                row, col = spec
-            else:
-                row = spec
-                col = 1  # Starts from column 1
-
+        for (ftr_name, plot_type), (row, col) in self.layout_spec.items():
             if plot_type == "scatter":
                 self.plot_scatter(ftr_name, row, col)
             elif plot_type == "histogram":
+
                 self.plot_histogram(ftr_name, row, col)
 
-        if self.use_overlay:
-            self.fig.update_layout(barmode="overlay")
-        else:
-            self.fig.update_layout(barmode="group")
+        self.fig.update_layout(barmode="overlay")
         self.fig.update_layout(bargap=0.0)
         self.fig.update_layout(
             height=400 * self.num_rows,
@@ -141,7 +107,7 @@ class IsingEval:
             display(
                 VBox(
                     [
-                        FigureWidget(self.fig),
+                        self.fig,
                         HBox(
                             [
                                 self.save_button_figure,
@@ -178,7 +144,7 @@ class IsingEval:
 
         pio.write_image(self.fig, curr_fig_path)
 
-    def save_results(self, button):  # doesn't overwrite
+    def save_results(self, button):  # make sure we don't overwrite
         analysis_path = self.analysis_path
         res_path = analysis_path + "results/"
         IsingEval._make_dir(analysis_path)
@@ -210,7 +176,9 @@ class IsingEval:
     #####################
 
     # --- plotting --- #
+
     def plot_scatter(self, ftr_name, row, col, pad=0.5):
+
         true_data = IsingEval.get_ftr(self.true_model, self.true_sample, ftr_name)
         est_datas = [
             IsingEval.get_ftr(est_model, est_sample, ftr_name)
@@ -223,6 +191,7 @@ class IsingEval:
                 self.fig, true_data, est_data, color, label, row, col
             )
 
+        # all_data = np.concatenate(est_datas + [true_data])
         min_val, max_val = np.min(true_data), np.max(true_data)
         interval = IsingEval.get_padded_interval(min_val, max_val, pad)
 
@@ -330,6 +299,7 @@ class IsingEval:
         )
 
     # --- calculations --- #
+
     def get_results(self):
         results = {
             "scatters": self.get_scatter_results(),
@@ -339,9 +309,8 @@ class IsingEval:
 
     def get_scatter_results(self):
         scatter_results = {}
-        for (ftr_name, plot_type), row_col in self.layout_spec.items():
+        for (ftr_name, plot_type), (row, col) in self.layout_spec.items():
             if plot_type == "scatter":
-                row, col = row_col
                 scatter_results[f"{ftr_name} - ({row, col})"] = {
                     label: self.get_model_ftr_rmse(ftr_name, model, sample)
                     for label, model, sample in zip(
@@ -353,13 +322,8 @@ class IsingEval:
     def get_hist_results(self):
         hist_results = {}
 
-        for (ftr_name, plot_type), row_col in self.layout_spec.items():
+        for (ftr_name, plot_type), (row, col) in self.layout_spec.items():
             if plot_type == "histogram":
-                if isinstance(row_col, tuple):
-                    row, col = row_col
-                elif isinstance(row_col, int):
-                    row = row_col
-                    col = "all"
                 hist_results[f"{ftr_name} - ({row, col})"] = self.get_ks_test_results(
                     ftr_name
                 )

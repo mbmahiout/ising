@@ -1,0 +1,11 @@
+num_units: 50
+true_model:
+  true_fields: Seven performing 1
+  true_couplings: Seven performing 1
+  num_sims: 12000
+  num_burn: 1000
+inverse_methods:
+  EQ:
+  - EQ
+  - NEQ
+  NEQ: []
