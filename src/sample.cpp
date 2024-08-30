@@ -31,9 +31,4 @@ void Sample::setDelayedCorrs(int dt) const
     Eigen::VectorXd m_tail{(states_tail.cast<double>()).rowwise().mean()};
     Eigen::MatrixXd D{(states_head * states_tail.transpose()).cast<double>() / numBinsNew};
     m_dcorrs = D - m_head * m_tail.transpose();
-    m_isDcorrsSet = true;
 }
-
-// void Sample::setTriCorrs() const
-// {
-// }

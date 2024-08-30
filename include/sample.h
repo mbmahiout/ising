@@ -19,8 +19,6 @@ private:
     mutable bool m_isMeansSet{false};
     mutable bool m_isPcorrsSet{false};
     mutable bool m_isCcorrsSet{false};
-    mutable bool m_isDcorrsSet{false};
-    // mutable bool m_isTriCorrsSet{false};
 
     // setters
     void setMeans() const;
@@ -71,10 +69,7 @@ public:
 
     [[nodiscard]] Eigen::MatrixXd getDelayedCorrs(int dt) const
     {
-        if (!m_isDcorrsSet)
-        {
-            setDelayedCorrs(dt);
-        }
+        setDelayedCorrs(dt);
         return m_dcorrs;
     }
 
