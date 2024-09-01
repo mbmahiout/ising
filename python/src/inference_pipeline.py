@@ -196,7 +196,7 @@ if not is_testing:
 
 # storing data
 print("\n")
-params_path = "./data/params/"  # asuming we're in repos root dir
+params_path = "./data/params/"  # asuming we're in root
 print("Storing data.")
 params_data = {
     "eq_couplings": eq_model.getCouplings(),
