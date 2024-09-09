@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import ks_2samp
+from scipy.stats import gaussian_kde
 import yaml
 import re
 from plotly.subplots import make_subplots
@@ -18,6 +19,7 @@ from utils import (
     get_unique_3d_tensor_vals,
     get_unique_matrix_vals,
     is_notebook,
+    get_distr_and_range,
 )
 
 
@@ -33,7 +35,7 @@ class IsingEval:
         analysis_path=None,
         metadata=None,
         is_eq_vs_neq=False,
-        use_overlay=False,
+        # use_overlay=False,
         num_bins=20,
     ):
         """
@@ -68,7 +70,7 @@ class IsingEval:
         self.save_button_metadata.on_click(self.save_metadata)
         self.save_button_results = widgets.Button(description="Save results")
         self.save_button_results.on_click(self.save_results)
-        self.use_overlay = use_overlay
+        # self.use_overlay = use_overlay
         self.num_bins = num_bins
         if is_eq_vs_neq:
             self.color_palette = [
@@ -92,7 +94,7 @@ class IsingEval:
     ################
 
     def generate_plots(self, is_pdf):
-        # Prepare the specs for each subplot
+        # prepare the specs for each subplot
         specs = [[{} for _ in range(self.num_cols)] for _ in range(self.num_rows)]
         for (ftr_name, plot_type), spec in self.layout_spec.items():
             if isinstance(spec, tuple):
@@ -104,7 +106,7 @@ class IsingEval:
                 for i in range(1, self.num_cols):
                     specs[row - 1][i] = None  # Span all columns
 
-        # Create subplots with the correct specs
+        # create subplots with the correct specs
         self.fig = make_subplots(
             rows=self.num_rows,
             cols=self.num_cols,
@@ -123,14 +125,9 @@ class IsingEval:
 
             if plot_type == "scatter":
                 self.plot_scatter(ftr_name, row, col)
-            elif plot_type == "histogram":
-                self.plot_histogram(ftr_name, row, col)
+            elif plot_type == "density":
+                self.plot_density_curve(ftr_name, row, col)
 
-        if self.use_overlay:
-            self.fig.update_layout(barmode="overlay")
-        else:
-            self.fig.update_layout(barmode="group")
-        self.fig.update_layout(bargap=0.0)
         self.fig.update_layout(
             height=400 * self.num_rows,
             width=400 * self.num_cols,
@@ -138,10 +135,11 @@ class IsingEval:
 
         # if notebook
         if is_notebook():
+            self.fig_widget = FigureWidget(self.fig)
             display(
                 VBox(
                     [
-                        FigureWidget(self.fig),
+                        self.fig_widget,
                         HBox(
                             [
                                 self.save_button_figure,
@@ -175,8 +173,10 @@ class IsingEval:
         while path_exists:
             curr_fig_path = IsingEval.increment_path_num(curr_fig_path)
             path_exists = os.path.exists(curr_fig_path)
-
-        pio.write_image(self.fig, curr_fig_path)
+        if is_notebook():
+            pio.write_image(self.fig_widget, curr_fig_path)
+        else:
+            pio.write_image(self.fig, curr_fig_path)
 
     def save_results(self, button):  # doesn't overwrite
         analysis_path = self.analysis_path
@@ -240,44 +240,56 @@ class IsingEval:
             col=col,
         )
 
-    def plot_histogram(self, ftr_name, row, col):
-        num_bins = self.num_bins
-
+    def plot_density_curve(self, ftr_name, row, col):
         true_data = IsingEval.get_ftr(self.true_model, self.true_sample, ftr_name)
         est_datas = [
             IsingEval.get_ftr(est_model, est_sample, ftr_name)
             for est_model, est_sample in zip(self.est_models, self.est_samples)
         ]
 
-        all_data = np.concatenate(est_datas + [true_data])
-        min_val, max_val = np.min(all_data), np.max(all_data)
+        # check if data is discrete (integer values) or continuous
+        is_discrete = np.issubdtype(true_data.dtype, np.integer)
+        values_true, distr_true = get_distr_and_range(true_data, is_discrete)
 
-        bin_width = (max_val - min_val) / num_bins
-        bin_edges = np.arange(min_val, max_val + bin_width, bin_width)
-        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-
+        # plot distributions for the estimated models
         colors = self.color_palette[: len(self.labels)]
         for est_data, label, color in zip(est_datas, self.labels, colors):
-            counts, _ = np.histogram(est_data, bins=bin_edges, density=True)
-            IsingEval._add_histogram(
-                self.fig, counts, bin_centers, bin_width, label, color, row, col
+            values_est, distr_est = get_distr_and_range(
+                est_data, is_discrete, value_range=np.array(values_true)
             )
-        counts, _ = np.histogram(true_data, bins=bin_edges, density=True)
-        IsingEval._add_histogram(
-            self.fig,
-            counts,
-            bin_centers,
-            bin_width,
-            label="True",
-            color="grey",
+            self.fig.add_trace(
+                go.Scatter(
+                    x=values_true,
+                    y=distr_est,
+                    mode="lines",
+                    name=label,
+                    line=dict(color=color),
+                    marker=dict(color=color, size=5),
+                    legendgroup=label,
+                    showlegend=row == 1 and col == 1,
+                ),
+                row=row,
+                col=col,
+            )
+
+        # plot distribution for the true model
+        self.fig.add_trace(
+            go.Scatter(
+                x=values_true,
+                y=distr_true,
+                mode="lines",
+                name="True",
+                line=dict(color="grey", dash="dash"),
+                marker=dict(color="grey", size=5),
+                legendgroup="True",
+                showlegend=row == 1 and col == 1,
+            ),
             row=row,
             col=col,
         )
-
         ftr_symbol = IsingEval.get_ftr_symbol(ftr_name)
-        self.fig.update_yaxes(range=[0, 1], row=row, col=col)
         self.fig.update_xaxes(title_text=rf"$\Large {ftr_symbol}$", row=row, col=col)
-        self.fig.update_yaxes(title_text=rf"$\Large P({ftr_symbol})$", row=row, col=col)
+        self.fig.update_yaxes(title_text="Rel. Freq.", row=row, col=col)
 
     @staticmethod
     def _add_comparison_scatter(fig, true_data, est_data, color, label, row, col):
@@ -311,29 +323,11 @@ class IsingEval:
             col=col,
         )
 
-    @staticmethod
-    def _add_histogram(fig, counts, bin_centers, bin_width, label, color, row, col):
-        showlegend = row == 1 and col == 1
-        adjusted_counts = counts * bin_width
-        fig.add_trace(
-            go.Bar(
-                x=bin_centers,
-                y=adjusted_counts,
-                width=bin_width,
-                marker=dict(color=color, opacity=0.75),
-                name=label,
-                legendgroup=label,
-                showlegend=showlegend,
-            ),
-            row=row,
-            col=col,
-        )
-
     # --- calculations --- #
     def get_results(self):
         results = {
             "scatters": self.get_scatter_results(),
-            "histograms": self.get_hist_results(),
+            "density": self.get_density_results(),
         }
         return results
 
@@ -350,20 +344,20 @@ class IsingEval:
                 }
         return scatter_results
 
-    def get_hist_results(self):
-        hist_results = {}
+    def get_density_results(self):
+        density_results = {}
 
         for (ftr_name, plot_type), row_col in self.layout_spec.items():
-            if plot_type == "histogram":
+            if plot_type == "density":
                 if isinstance(row_col, tuple):
                     row, col = row_col
                 elif isinstance(row_col, int):
                     row = row_col
                     col = "all"
-                hist_results[f"{ftr_name} - ({row, col})"] = self.get_ks_test_results(
-                    ftr_name
+                density_results[f"{ftr_name} - ({row, col})"] = (
+                    self.get_ks_test_results(ftr_name)
                 )
-        return hist_results
+        return density_results
 
     def get_model_ftr_rmse(self, ftr_name, model, sample):
         true_data = IsingEval.get_ftr(self.true_model, self.true_sample, ftr_name)
@@ -398,7 +392,7 @@ class IsingEval:
                 if isinstance(pval, np.generic):
                     pval = pval.item()
                 label = f"{labels[l1]} & {labels[l2]}"
-                test_results[label] = {"stat": round(stat, 3), "pval": round(pval, 3)}
+                test_results[label] = {"stat": f"{stat:.2e}", "pval": f"{pval:.2e}"}
         return test_results
 
     # --- misc --- #

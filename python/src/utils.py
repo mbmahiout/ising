@@ -6,6 +6,7 @@ import ising
 
 import numpy as np
 from scipy.stats import ks_2samp
+from scipy.stats import gaussian_kde
 import pandas as pd
 import os
 from IPython.display import display
@@ -27,6 +28,64 @@ def is_notebook():
             return False
     except NameError:
         return False
+
+
+def get_relfreqs_and_range_discrete(
+    sample: np.ndarray, possible_vals: np.ndarray = None
+):
+    unique_vals, counts = np.unique(sample, return_counts=True)
+    if possible_vals is not None:
+        full_counts = np.zeros(len(possible_vals))
+        for i, val in enumerate(possible_vals):
+            if val in unique_vals:
+                full_counts[i] = counts[np.where(unique_vals == val)[0]]
+        return possible_vals, full_counts / len(sample)
+    else:
+        return unique_vals, counts / len(sample)
+
+
+def bin_centers2edges(bin_centers):
+    bin_width = bin_centers[1] - bin_centers[0]
+    bin_edges = np.zeros(len(bin_centers) + 1)
+    bin_edges[1:-1] = (bin_centers[:-1] + bin_centers[1:]) / 2
+    bin_edges[0] = bin_centers[0] - bin_width / 2
+    bin_edges[-1] = bin_centers[-1] + bin_width / 2
+    return bin_edges
+
+
+def get_relfreqs_and_range_continous(
+    sample: np.ndarray, num_bins=30, bin_centers: np.ndarray = None
+):
+    if bin_centers is not None:
+        bin_edges = bin_centers2edges(bin_centers)
+        counts, bin_edges = np.histogram(sample, bins=bin_edges)
+    elif num_bins is not None:
+        counts, bin_edges = np.histogram(sample, bins=num_bins)
+    else:
+        raise ValueError("Provide either num_bins or bins")
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    return bin_centers, counts / len(sample)
+
+
+def get_pdf_and_range_continous(sample: np.ndarray):
+    kde = gaussian_kde(sample)
+    values = np.linspace(min(sample), max(sample), 1000)
+    pdf = kde(values)
+    return values, pdf
+
+
+def get_distr_and_range(
+    sample: np.ndarray, is_discrete: bool, value_range: np.ndarray = None
+):
+    if is_discrete:
+        values, distr = get_relfreqs_and_range_discrete(
+            sample, possible_vals=value_range
+        )
+    else:
+        values, distr = get_relfreqs_and_range_continous(
+            sample, bin_centers=value_range
+        )
+    return values, distr
 
 
 def get_train_test_samples(sample: ising.Sample, prop_train=0.7) -> tuple:
