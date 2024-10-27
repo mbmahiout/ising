@@ -13,6 +13,23 @@ from IPython.display import display
 from IPython import get_ipython
 
 
+def get_recording_summary(sample, bin_width):
+    num_units = sample.getNumUnits()
+    binary_spikes_per_bin = (1 + sample.getMeans()) / 2
+    av_spikes_per_bin = np.mean(binary_spikes_per_bin)
+
+    return pd.Series(
+        {
+            "bin width [ms]": bin_width,
+            "av. spikes per bin": av_spikes_per_bin,
+            "av. firing rate": av_spikes_per_bin / (bin_width / 1000),
+            "av. population spikes per bin": num_units * av_spikes_per_bin,
+            "N_c": 1 / av_spikes_per_bin,
+            "N": num_units,
+        }
+    )
+
+
 def print_elapsed_time(t1, t2):
     dt = t2 - t1
     mins, secs = divmod(dt, 60)

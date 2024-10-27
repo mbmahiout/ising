@@ -13,6 +13,7 @@ private:
     mutable Eigen::MatrixXd m_pcorrs{};
     mutable Eigen::MatrixXd m_ccorrs{};
     mutable Eigen::MatrixXd m_dcorrs{};
+
     // mutable Eigen::MatrixXd m_tricorrs{};
 
     // flags
@@ -72,6 +73,8 @@ public:
         setDelayedCorrs(dt);
         return m_dcorrs;
     }
+
+    // TO-DO: make function to get energy histogram
 
     // [[nodiscard]] Eigen::MatrixXd getTriCorrs() const
     // {

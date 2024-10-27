@@ -1,0 +1,21 @@
+scatters:
+  fields - ((1, 1)):
+    nMF: 0.09
+    TAP: 0.044
+    ML: 0.011
+
+  couplings - ((2, 1)):
+    nMF: 0.056
+    TAP: 0.032
+    ML: 0.007
+
+  means - ((1, 2)):
+    nMF: 0.15
+    TAP: 0.015
+    ML: 0.015
+
+  dcorrs - ((2, 2)):
+    nMF: 0.081
+    TAP: 0.045
+    ML: 0.008
+density: {}

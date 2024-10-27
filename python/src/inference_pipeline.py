@@ -26,16 +26,16 @@ import argparse
 
 parser = argparse.ArgumentParser(description="")
 parser.add_argument(
-    "is_testing",
+    "--is_testing",
     type=bool,
     help="Just running a test? (won't do as many inference steps)",
     default=True,
 )
 parser.add_argument(
-    "mouse_name", type=str, help="Name of the recorded mouse.", default="Angie"
+    "--mouse_name", type=str, help="Name of the recorded mouse.", default="Angie"
 )
-parser.add_argument("num_units", type=int, help="Number of units.", default=10)
-parser.add_argument("num_sims", type=int, help="Name of simulations.", default=15_000)
+parser.add_argument("--num_units", type=int, help="Number of units.", default=10)
+parser.add_argument("--num_sims", type=int, help="Name of simulations.", default=15_000)
 args = parser.parse_args()
 
 # variable hyperparams
@@ -91,14 +91,14 @@ t1 = time.time()
 eq_fitter.maximize_likelihood(
     sample=sample,
     max_steps=4_000,
-    learning_rate=0.05,
+    learning_rate=0.005,
     win_size=win_size,
     tolerance=tol_ml,
     num_sims=num_sims,
     num_burn=num_burn,
     calc_llh=False,
 )
-print("Run 1 - eta = 0.05, DONE")
+print("Run 1 - eta = 0.005, DONE")
 t2 = time.time()
 utils.print_elapsed_time(t1, t2)
 
@@ -107,29 +107,29 @@ if not is_testing:
     eq_fitter.maximize_likelihood(
         sample=sample,
         max_steps=4_000,
-        learning_rate=0.025,
+        learning_rate=0.0025,
         win_size=win_size,
         tolerance=tol_ml,
         num_sims=num_sims,
         num_burn=num_burn,
         calc_llh=False,
     )
-    print("Run 2 - eta = 0.025, DONE")
+    print("Run 2 - eta = 0.0025, DONE")
     t2 = time.time()
     utils.print_elapsed_time(t1, t2)
 
     t1 = time.time()
     eq_fitter.maximize_likelihood(
         sample=sample,
-        max_steps=8_000,
-        learning_rate=0.01,
+        max_steps=10_000,
+        learning_rate=0.001,
         win_size=win_size,
         tolerance=tol_ml,
         num_sims=num_sims,
         num_burn=num_burn,
         calc_llh=False,
     )
-    print("Run 3 - eta = 0.01, DONE")
+    print("Run 3 - eta = 0.001, DONE")
     t2 = time.time()
     utils.print_elapsed_time(t1, t2)
 
@@ -161,7 +161,7 @@ t1 = time.time()
 neq_fitter.maximize_likelihood(
     sample=sample,
     max_steps=4_000,
-    learning_rate=0.05,
+    learning_rate=0.005,
     win_size=win_size,
     tolerance=1e-16,
 )
@@ -174,7 +174,7 @@ if not is_testing:
     neq_fitter.maximize_likelihood(
         sample=sample,
         max_steps=4_000,
-        learning_rate=0.025,
+        learning_rate=0.0025,
         win_size=win_size,
         tolerance=1e-16,
     )
@@ -185,8 +185,8 @@ if not is_testing:
     t1 = time.time()
     neq_fitter.maximize_likelihood(
         sample=sample,
-        max_steps=8_000,
-        learning_rate=0.01,
+        max_steps=10_000,
+        learning_rate=0.001,
         win_size=win_size,
         tolerance=1e-16,
     )

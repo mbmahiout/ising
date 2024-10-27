@@ -52,7 +52,7 @@ def get_partitioned_sample(
     states = reduce_time_resolution(states, bin_width)
     subsamples = get_nonoverlapping_subsamples(states, num_subsamples)
     subsamples = [binary2ising(s) for s in subsamples]
-    subsamples = [ising.Sample(s) for s in subsamples]
+    subsamples = [ising.Sample(s.T) for s in subsamples]
     return subsamples  # list(map(lambda s: ising.Sample(binary2ising(s)), subsamples))
 
 
