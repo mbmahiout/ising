@@ -23,8 +23,10 @@ import plotly.graph_objs as go
 
 import argparse
 
-
 parser = argparse.ArgumentParser(description="")
+parser.add_argument(
+    "--models", type=str, help="Which models to use (EQ, NEQ, or Both).", default="Both"
+)
 parser.add_argument(
     "--mouse_name", type=str, help="Name of the recorded mouse.", default="Angie"
 )
@@ -39,10 +41,19 @@ parser.add_argument(
 args = parser.parse_args()
 
 # variable hyperparams
+models = args.models
 mouse_name = args.mouse_name
 num_units = args.num_units
 num_sims = args.num_sims
 use_prev_params = args.use_prev_params
+
+print(
+    f"""
+Running with:
+- models: {models}
+- use_prev_params: {use_prev_params}  
+"""
+)
 
 # fixed hyperparams
 num_burn = 5_000
@@ -75,6 +86,7 @@ if use_prev_params and os.path.exists(params_fname):
     neq_couplings = params_data["neq_couplings"]
     neq_fields = params_data["neq_fields"]
 
+
 ###############
 # EQUILIBRIUM #
 ###############
@@ -89,63 +101,62 @@ if not use_prev_params:
 
 eq_model = ising.EqModel(eq_couplings, eq_fields)
 
+if models == "EQ" or models == "Both":
+    # inference
+    eq_fitter = fitter.EqFitter(eq_model)
 
-# inference
-eq_fitter = fitter.EqFitter(eq_model)
+    print("Starting inference (EQ)")
+    # if not use_prev_params:
+    #     print("TAP")
+    #     t1 = time.time()
+    #     eq_fitter.TAP(sample)
+    #     t2 = time.time()
+    #     utils.print_elapsed_time(t1, t2)
 
-print("Starting inference (EQ)")
-if not use_prev_params:
-    print("TAP")
-    t1 = time.time()
-    eq_fitter.TAP(sample)
-    t2 = time.time()
-    utils.print_elapsed_time(t1, t2)
+    # t1 = time.time()
+    # eq_fitter.maximize_likelihood(
+    #     sample=sample,
+    #     max_steps=1_000,
+    #     learning_rate=0.0025,
+    #     win_size=win_size,
+    #     tolerance=tol_ml,
+    #     num_sims=num_sims,
+    #     num_burn=num_burn,
+    #     calc_llh=False,
+    # )
+    # print("Run - eta = 0.0025, DONE")
+    # t2 = time.time()
+    # utils.print_elapsed_time(t1, t2)
 
-    print("Likelihood maximization")
+    # t1 = time.time()
+    # eq_fitter.maximize_likelihood(
+    #     sample=sample,
+    #     max_steps=10_000,
+    #     learning_rate=0.001,
+    #     win_size=win_size,
+    #     tolerance=tol_ml,
+    #     num_sims=num_sims,
+    #     num_burn=num_burn,
+    #     calc_llh=False,
+    # )
+    # print("Run - eta = 0.001, DONE")
+    # t2 = time.time()
+    # utils.print_elapsed_time(t1, t2)
+
     t1 = time.time()
     eq_fitter.maximize_likelihood(
         sample=sample,
-        max_steps=4_000,
-        learning_rate=0.005,
+        max_steps=7_000,
+        learning_rate=0.00001,
         win_size=win_size,
         tolerance=tol_ml,
         num_sims=num_sims,
         num_burn=num_burn,
         calc_llh=False,
     )
-    print("Run 1 - eta = 0.005, DONE")
+    print("Run - eta = 0.00001, DONE")
     t2 = time.time()
     utils.print_elapsed_time(t1, t2)
-
-    t1 = time.time()
-    eq_fitter.maximize_likelihood(
-        sample=sample,
-        max_steps=4_000,
-        learning_rate=0.0025,
-        win_size=win_size,
-        tolerance=tol_ml,
-        num_sims=num_sims,
-        num_burn=num_burn,
-        calc_llh=False,
-    )
-    print("Run 2 - eta = 0.0025, DONE")
-    t2 = time.time()
-    utils.print_elapsed_time(t1, t2)
-
-t1 = time.time()
-eq_fitter.maximize_likelihood(
-    sample=sample,
-    max_steps=15_000,
-    learning_rate=0.001,
-    win_size=win_size,
-    tolerance=tol_ml,
-    num_sims=num_sims,
-    num_burn=num_burn,
-    calc_llh=False,
-)
-print("Run 3 - eta = 0.001, DONE")
-t2 = time.time()
-utils.print_elapsed_time(t1, t2)
 
 ###################
 # NON-EQUILIBRIUM #
@@ -161,63 +172,62 @@ if not use_prev_params:
 
 neq_model = ising.NeqModel(neq_couplings, neq_fields)
 
-# inference
+if models == "NEQ" or models == "Both":
+    # inference
+    neq_fitter = fitter.NeqFitter(neq_model)
+    print("Starting inference (NEQ)")
+    # if not use_prev_params:
+    #     print("TAP")
+    #     t1 = time.time()
+    #     neq_fitter.TAP(sample)
+    #     t2 = time.time()
+    #     utils.print_elapsed_time(t1, t2)
 
-neq_fitter = fitter.NeqFitter(neq_model)
-print("Starting inference (NEQ)")
-if not use_prev_params:
-    print("TAP")
-    t1 = time.time()
-    neq_fitter.TAP(sample)
-    t2 = time.time()
-    utils.print_elapsed_time(t1, t2)
+    # t1 = time.time()
+    # neq_fitter.maximize_likelihood(
+    #     sample=sample,
+    #     max_steps=1_000,
+    #     learning_rate=0.0025,
+    #     win_size=win_size,
+    #     tolerance=1e-16,
+    # )
+    # print("Run - eta = 0.0025, DONE")
+    # t2 = time.time()
+    # utils.print_elapsed_time(t1, t2)
 
-    print("Likelihood maximization")
+    # t1 = time.time()
+    # neq_fitter.maximize_likelihood(
+    #     sample=sample,
+    #     max_steps=10_000,
+    #     learning_rate=0.001,
+    #     win_size=win_size,
+    #     tolerance=1e-16,
+    # )
+    # print("Run - eta = 0.001, DONE")
+    # t2 = time.time()
+    # utils.print_elapsed_time(t1, t2)
+
     t1 = time.time()
     neq_fitter.maximize_likelihood(
         sample=sample,
-        max_steps=4_000,
-        learning_rate=0.005,
+        max_steps=7_000,
+        learning_rate=0.0005,
         win_size=win_size,
         tolerance=1e-16,
     )
-    print("Run 1 - eta = 0.05, DONE")
+    print("Run - eta = 0.0005, DONE")
     t2 = time.time()
     utils.print_elapsed_time(t1, t2)
 
-    t1 = time.time()
-    neq_fitter.maximize_likelihood(
-        sample=sample,
-        max_steps=4_000,
-        learning_rate=0.0025,
-        win_size=win_size,
-        tolerance=1e-16,
-    )
-    print("Run 2 - eta = 0.025, DONE")
-    t2 = time.time()
-    utils.print_elapsed_time(t1, t2)
-
-t1 = time.time()
-neq_fitter.maximize_likelihood(
-    sample=sample,
-    max_steps=10_000,
-    learning_rate=0.001,
-    win_size=win_size,
-    tolerance=1e-16,
-)
-print("Run 3 - eta = 0.01, DONE")
-t2 = time.time()
-utils.print_elapsed_time(t1, t2)
-
-# storing data
-print("Storing data.")
-params_data = {
-    "eq_couplings": eq_model.getCouplings(),
-    "eq_fields": eq_model.getFields(),
-    "neq_couplings": neq_model.getCouplings(),
-    "neq_fields": neq_model.getFields(),
-}
-np.save(params_fname, params_data)
+    # storing data
+    print("Storing data.")
+    params_data = {
+        "eq_couplings": eq_model.getCouplings(),
+        "eq_fields": eq_model.getFields(),
+        "neq_couplings": neq_model.getCouplings(),
+        "neq_fields": neq_model.getFields(),
+    }
+    np.save(params_fname, params_data)
 
 # for notebook/other script:
 # loaded_data = np.load('params_{mouse_name}_{num_units}.npy', allow_pickle=True).item()
