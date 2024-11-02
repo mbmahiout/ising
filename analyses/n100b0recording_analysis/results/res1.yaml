@@ -1,0 +1,5 @@
+scatters:
+  tricorrs - ((1, 1)):
+    EQ: 0.038
+    NEQ: 0.008
+density: {}

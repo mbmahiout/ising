@@ -146,7 +146,7 @@ if models == "EQ" or models == "Both":
     t1 = time.time()
     eq_fitter.maximize_likelihood(
         sample=sample,
-        max_steps=7_000,
+        max_steps=5_000,
         learning_rate=0.00001,
         win_size=win_size,
         tolerance=tol_ml,
@@ -210,7 +210,7 @@ if models == "NEQ" or models == "Both":
     t1 = time.time()
     neq_fitter.maximize_likelihood(
         sample=sample,
-        max_steps=7_000,
+        max_steps=5_000,
         learning_rate=0.0005,
         win_size=win_size,
         tolerance=1e-16,

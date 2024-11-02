@@ -406,7 +406,7 @@ class IsingEval:
             "pcorrs": r"\chi_{ij}",
             "ccorrs": r"C_{ij}",
             "dcorrs": r"D_{ij}",
-            "tricorrs": r"T_{ij}",
+            "tricorrs": r"C^{(3)}_{ijk}",
             "num-distr": r"N^+",
         }
         return ftr_symbols.get(ftr_name, r"O")

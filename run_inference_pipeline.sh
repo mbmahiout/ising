@@ -1,10 +1,10 @@
 #!/bin/bash
 
-num_units_range=(220 230 240 250 260 270)
+num_units_range=(250 260 270)
 
 models="Both"
 mouse_name="Angie"
-num_sims=45000  # 30k sims
+num_sims=60000  # 30k sims
 use_prev_params=True
 
 python_script="python/src/inference_pipeline.py"

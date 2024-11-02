@@ -11,6 +11,7 @@ import pandas as pd
 import os
 from IPython.display import display
 from IPython import get_ipython
+from itertools import combinations_with_replacement
 
 
 def get_recording_summary(sample, bin_width):
@@ -332,17 +333,6 @@ def _get_pair_prods(states: np.array):
     return pair_prods
 
 
-def get_unique_3d_tensor_vals(tensor: np.array) -> np.array:
-    i, j, k = np.indices(tensor.shape)
-    mask = (i <= j) & (j <= k)
-    return tensor[mask]
-
-
-def get_unique_matrix_vals(matrix: np.array) -> np.array:
-    i, j = np.triu_indices(n=matrix.shape[0], k=1)
-    return matrix[i, j]
-
-
 def get_3rd_order_corrs(states: np.array):
     """
     calculates the 3rd order correlations
@@ -356,6 +346,54 @@ def get_3rd_order_corrs(states: np.array):
         i_array = _get_unit_array(states, i)
         prod_array = pair_prods * i_array
         tricorrs[i, :, :] = np.mean(prod_array, axis=0)
+    return tricorrs
+
+
+def get_unique_3d_tensor_vals(tensor: np.array) -> np.array:
+    i, j, k = np.indices(tensor.shape)
+    mask = (i <= j) & (j <= k)
+    return tensor[mask]
+
+
+def get_unique_matrix_vals(matrix: np.array) -> np.array:
+    i, j = np.triu_indices(n=matrix.shape[0], k=1)
+    return matrix[i, j]
+
+
+# def get_3rd_order_corrs(states: np.array, chunk_size=1000):
+#     num_bins, num_units = states.shape
+#     indices = list(combinations_with_replacement(range(num_units), 3))
+#     tricorrs = np.zeros(len(indices))
+
+#     for start in range(0, num_bins, chunk_size):
+#         end = min(start + chunk_size, num_bins)
+#         chunk_states = states[start:end, :]
+
+#         for idx, (i, j, k) in enumerate(indices):
+#             prod = chunk_states[:, i] * chunk_states[:, j] * chunk_states[:, k]
+#             tricorrs[idx] += np.sum(prod)
+
+#     tricorrs /= num_bins
+#     return tricorrs
+
+
+########################################################################################
+
+
+def get_unique_3rd_order_corrs_chunked(states: np.array, chunk_size=1000):
+    num_bins, num_units = states.shape
+    indices = list(combinations_with_replacement(range(num_units), 3))
+    tricorrs = np.zeros(len(indices))
+
+    for start in range(0, num_bins, chunk_size):
+        end = min(start + chunk_size, num_bins)
+        chunk_states = states[start:end, :]
+
+        for idx, (i, j, k) in enumerate(indices):
+            prod = chunk_states[:, i] * chunk_states[:, j] * chunk_states[:, k]
+            tricorrs[idx] += np.sum(prod)
+
+    tricorrs /= num_bins
     return tricorrs
 
 

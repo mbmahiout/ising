@@ -1,0 +1,14 @@
+num_units: 270
+bin_width: 0
+num_bins: 11997
+inverse_methods:
+  EQ:
+  - ML
+  NEQ:
+  - ML
+maximum_likelihood:
+  num_steps: '...'
+  learning_rate: '...'
+  is_converged: '...'
+  num_sims: 150000
+  num_burn: 5000

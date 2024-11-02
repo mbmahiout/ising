@@ -1,8 +1,0 @@
-270: mangler litt på NEQ
-260: mangler litt på begge
-250: mangler litt på NEQ
-240: mangler litt på NEQ
-230: mangler litt på NEQ (ikke langt unna)
-220: mangler litt på NEQ
-210: EQ bad, NEQ perfect
-190: Eq mangle litt, men NEQ er bra
