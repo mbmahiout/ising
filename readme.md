@@ -5,7 +5,7 @@
 This is the codebase accompanying my masters thesis at the Kavli Institute for Systems Neuroscience at NTNU, titled **A Statistical Physics Approach to
 Modelling the Joint Activity of Cortical Populations**.
 
-It was originally in Python, but was re-written with the core functionality in C++ for greater performance. It includes implementations of the equilibrium and non-equilibrium Ising models, as well as methods for generating MCMC simulations and inference methods used to fit the models to neural recording data. I've used C++ for the "back-end", which includes all of the aforementioned core functionality. Additionally, there is a python "front-end" for data processing, visualization, and wrappers for some of the C++ code. Finally, pybind11 was used to form a bridge from the C++ component to the Python one.
+It was originally pure Python, but was re-written with the core functionality in C++ for greater performance. It includes implementations of the equilibrium and non-equilibrium Ising models, as well as methods for generating MCMC simulations and inference methods used to fit the models to neural recording data. I've used C++ for the "back-end", which includes all of the aforementioned core functionality. Additionally, there is a python "front-end" for data processing, visualization, and wrappers for some of the C++ code. Finally, pybind11 was used to form a bridge from the C++ component to the Python one.
 
 ## Installation
 
