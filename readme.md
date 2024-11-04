@@ -9,20 +9,24 @@ This is the code I used to train the equilibrium and non-equilibrium Ising model
 ### Prerequisites
 - C++20
 - CMake >= 3.27
-- **Eigen**: [GitHub Repo](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+- **Eigen**: [Webpage](https://eigen.tuxfamily.org/index.php?title=Main_Page)
 - **PyBind11**: [GitHub Repo](https://github.com/pybind/pybind11)
 - **Conda**: [Download Miniconda or Anaconda](https://docs.conda.io/en/latest/miniconda.html)
 
-### Setting up Python environment:
+### Setting up Python environment
+```
 conda create -n ising_env python=3.12.1
 conva activate ising_env
 pip install -r requirements.txt
+```
 
 ### Building the C++ executable
+```
 cd build
 cmake ..
 make
 cd ..
+```
 
 ## Usage
 - C++ code for MCMC simulations, gradient ascent to maximize likelihood, as well as pybindings for making the C++ modules avaliable in Python is found in the ./src directory, and the associated headers are situated in ./include.
