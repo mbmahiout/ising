@@ -1,0 +1,11 @@
+scatters:
+  means - ((1, 1)):
+    EQ: 0.009
+    NEQ: 0.002
+  pcorrs - ((1, 2)):
+    EQ: 0.013
+    NEQ: 0.003
+  dcorrs - ((1, 3)):
+    EQ: 0.002
+    NEQ: 0.001
+density: {}

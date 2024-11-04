@@ -1,5 +1,5 @@
-num_units: 100
-bin_width: 0
+num_units: 50
+bin_width: 50
 num_bins: 11997
 inverse_methods:
   EQ:
