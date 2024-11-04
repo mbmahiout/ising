@@ -2,16 +2,16 @@
 
 # Project Ising
 
-This is the code I used to train the equilibrium and non-equilibrium Ising models I used to infer probability densities over biological neural network states, based on multi-unit recordings with calcium imaging.
+This codebase includes implementations of the equilibrium and non-equilibrium Ising models, as well as methods for generating MCMC simulations and inference methods used to fit the models to neural recording data. I've used C++ for the "back-end", which includes all of the aforementioned core functionalities. Additionally, there is a python "front-end" for data processing, which includes modules for data processing, visualization, and wrappers for some of the C++ functionality. Finally, pybind11 was used to form a bridge from the C++ component to the Python one.
 
 ## Installation
 
 ### Prerequisites
 - C++20
 - CMake >= 3.27
-- **Eigen**: [Webpage](https://eigen.tuxfamily.org/index.php?title=Main_Page)
-- **PyBind11**: [GitHub Repo](https://github.com/pybind/pybind11)
-- **Conda**: [Download Miniconda or Anaconda](https://docs.conda.io/en/latest/miniconda.html)
+- **Eigen**: [download](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+- **PyBind11**: [download](https://github.com/pybind/pybind11)
+- **Conda**: [download](https://docs.conda.io/en/latest/miniconda.html)
 
 ### Setting up Python environment
 ```
