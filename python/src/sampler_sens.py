@@ -1,7 +1,7 @@
 import sys
 
 path2cpp_pkg = (
-    "/Users/mariusmahiout/Documents/repos/ising_core/build"  # to-do: make relative
+    "/Users/mariusmahiout/Documents/repos/ising/build"  # to-do: make relative
 )
 sys.path.append(path2cpp_pkg)
 import ising
