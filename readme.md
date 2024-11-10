@@ -25,6 +25,7 @@ pip install -r requirements.txt
 
 ### Building the C++ executable
 ```
+mkdir build
 cd build
 cmake ..
 make
