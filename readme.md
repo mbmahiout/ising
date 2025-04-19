@@ -18,7 +18,7 @@ It was originally pure Python, but was re-written with the core functionality in
 
 ### Setting up Python environment
 ```
-conda create -n ising_env python=3.12.1
+conda create -n ising_env python=3.12
 conva activate ising_env
 pip install -r requirements.txt
 ```
